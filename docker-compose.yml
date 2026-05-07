@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  # Database: PostgreSQL
+  eg-db:
+    image: postgres:15-alpine
+    container_name: eg-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - eg_db_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - energygrid_network
+
+  # Backend: Node.js (Escalable)
+  eg-backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: eg-backend
+    restart: unless-stopped
+    depends_on:
+      eg-db:
+        condition: service_healthy
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@eg-db:5432/${DB_NAME}
+      PORT: 3000
+    networks:
+      - energygrid_network
+
+  # Simulator: Python (IoT Telemetry)
+  eg-simulator:
+    build:
+      context: ./apps/simulator
+      dockerfile: Dockerfile
+    container_name: eg-simulator
+    restart: always
+    depends_on:
+      - eg-backend
+    environment:
+      BACKEND_URL: http://eg-backend:3000
+    networks:
+      - energygrid_network
+
+  # Frontend: React + Vite
+  eg-frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: eg-frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - energygrid_network
+
+networks:
+  energygrid_network:
+    driver: bridge
+
+volumes:
+  eg_db_data:
