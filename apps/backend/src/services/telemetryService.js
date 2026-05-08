@@ -12,4 +12,16 @@ const saveTelemetry = async (data) => {
   return result.rows[0];
 };
 
-module.exports = { saveTelemetry };
+//Obtener los datos de telemetría para un distrito específico
+const getLatestTelemetry = async (limit = 50) => {
+  const query = `
+    SELECT id, district_id, substation_id, consumption_kw, timestamp 
+    FROM telemetry 
+    ORDER BY timestamp DESC 
+    LIMIT $1;
+  `;
+  const result = await db.query(query, [limit]);
+  return result.rows;
+};
+
+module.exports = { saveTelemetry, getLatestTelemetry };
