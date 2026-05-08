@@ -21,4 +21,14 @@ const createTelemetry = async (req, res) => {
   }
 };
 
-module.exports = { createTelemetry };
+const getTelemetry = async (req, res) => {
+  try {
+    const data = await telemetryService.getLatestTelemetry(50);
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("[ERROR] Fetching telemetry:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = { createTelemetry, getTelemetry };
