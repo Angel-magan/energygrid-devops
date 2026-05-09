@@ -1,15 +1,15 @@
+const cors = require("cors");
 const express = require("express");
+const telemetryRoutes = require("./routes/telemetryRoutes");
 const app = express();
-// Usamos la variable de entorno que definimos en el docker-compose
 const port = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
+app.use("/api", telemetryRoutes);
 
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "UP", service: "EnergyGrid Backend" });
-});
+app.get("/health", (req, res) => res.status(200).send("UP"));
 
-// CRUCIAL: Añadir "0.0.0.0" para que Docker pueda redirigir el tráfico
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Backend listening at http://0.0.0.0:${port}`);
+  console.log(`[SERVER] EnergyGrid Backend running on port ${port}`);
 });

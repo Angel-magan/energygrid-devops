@@ -167,7 +167,7 @@
 
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -4.5px;
     border: 5px solid transparent;
@@ -181,4 +181,38 @@
     right: 0;
     border-right-color: var(--border);
   }
+}
+
+.dashboard {
+  padding: 20px;
+  font-family: sans-serif;
+  background: #f4f7f6;
+  min-height: 100vh;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+th {
+  background: #2c3e50;
+  color: white;
+}
+.high-load {
+  color: #e74c3c;
+  font-weight: bold;
+}
+.status-badge {
+  color: #27ae60;
+  font-weight: bold;
+  font-size: 0.9em;
 }
