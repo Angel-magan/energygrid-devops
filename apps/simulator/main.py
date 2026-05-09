@@ -5,7 +5,21 @@ from datetime import datetime
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://eg-backend:3000")
-DISTRICTS = ["Centro", "Norte", "Sur", "Occidente"]
+DISTRICTS = [
+    "Santa Ana",
+    "Coatepeque",
+    "El Congo",
+    "Masahuat",
+    "Metapán",
+    "Santa Rosa Guachipilín",
+    "Texistepeque",
+    "Candelaria de la Frontera",
+    "Chalchuapa",
+    "El Porvenir",
+    "San Antonio Pajonal",
+    "San Sebastián Salitrillo",
+    "Santiago de la Frontera"
+]
 
 def generate_data():
     return {
