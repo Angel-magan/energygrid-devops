@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Zap, AlertTriangle, Map as MapIcon } from 'lucide-react';
 import TelemetryTable from './TelemetryTable';
+import SantaAnaMap from './SantaAnaMap';
 import './Dashboard.css';
 
 const Dashboard = ({ data = [] }) => {
@@ -68,26 +69,8 @@ const Dashboard = ({ data = [] }) => {
   <div className="panel-header">
     <MapIcon size={20} /> <h2>Mapa de Carga - Sector Occidente</h2>
   </div>
-  <div className="map-placeholder">
-    <div className="map-grid">
-      {/* 
-          1. Extraemos los nombres únicos de los distritos que vienen en 'data'
-          2. Los ordenamos alfabéticamente para que el mapa no salte de posición
-      */}
-      {[...new Set(data.map(item => item.district_id))]
-        .sort()
-        .map(city => {
-          const cityData = data.find(d => d.district_id === city);
-          const isOverloaded = cityData && Number(cityData.consumption_kw) > 4750;
-
-          return (
-            <div key={city} className={`map-sector ${isOverloaded ? 'overload' : ''}`}>
-              <span>{city}</span>
-              <small>{cityData ? `${Number(cityData.consumption_kw).toFixed(2)} kW` : '--'}</small>
-            </div>
-          );
-      })}
-    </div>
+  <div className="map-placeholder" style={{ padding: 0, height: '100%', minHeight: '300px' }}>
+    <SantaAnaMap data={data} />
   </div>
 </div>
 
