@@ -22,7 +22,7 @@ app.use(cors(corsOptions));
 // 3. Rate Limiting (Protección contra Spam)
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 5, // Máximo 5 peticiones por minuto por IP
+  max: 100, // Máximo 100 peticiones por minuto por IP
   message: { error: "Demasiadas peticiones, intente más tarde." },
 });
 app.use("/api/", limiter);

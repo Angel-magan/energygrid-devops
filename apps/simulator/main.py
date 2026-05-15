@@ -25,7 +25,8 @@ def generate_data():
     return {
         "district_id": random.choice(DISTRICTS),
         "substation_id": f"SUB-{random.randint(1, 10):02d}",
-        "consumption_kw": round(random.uniform(100.0, 5000.0), 2),
+        # "consumption_kw": round(random.uniform(100.0, 5000.0), 2),
+        "consumption_kw": round(random.uniform(4600.0, 5000.0), 2),
         "timestamp": datetime.now().isoformat()
     }
 

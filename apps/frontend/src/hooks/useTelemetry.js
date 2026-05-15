@@ -12,7 +12,11 @@ export const useTelemetry = (refreshInterval = 5000) => {
       setData(telemetry);
       setError(null);
     } catch (err) {
-      setError("Error conectando con el servidor", err.message);
+      const message =
+        err?.response?.data?.error ||
+        err?.message ||
+        "Error conectando con el servidor";
+      setError(message);
     } finally {
       setLoading(false);
     }
