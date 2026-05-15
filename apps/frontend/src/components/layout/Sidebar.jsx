@@ -1,4 +1,11 @@
-import { LayoutDashboard, AlertTriangle, Activity, Cpu, X } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  AlertTriangle,
+  Activity,
+  Server,
+  X,
+} from "lucide-react";
 
 const Sidebar = ({ isOpen = true, onClose }) => {
   return (
@@ -27,33 +34,89 @@ const Sidebar = ({ isOpen = true, onClose }) => {
         <ul className="space-y-1.5">
           {/* Item Activo (Dashboard) */}
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-cyan bg-grid-blue/15 border border-grid-blue/30 font-semibold transition-all cursor-pointer">
-            <LayoutDashboard size={18} className="text-grid-cyan" />
-            <span className="text-sm">Dashboard</span>
+            {/* <LayoutDashboard size={18} className="text-grid-cyan" />
+            <span className="text-sm">Dashboard</span> */}
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <LayoutDashboard size={20} />
+              <span>Dashboard</span>
+            </NavLink>
           </li>
 
           {/* Items Secundarios */}
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            <AlertTriangle
+            {/* <AlertTriangle
               size={18}
               className="text-grid-dim group-hover:text-grid-cyan transition-colors"
             />
-            <span className="text-sm">Alertas</span>
+            <span className="text-sm">Alertas</span> */}
+            <NavLink
+              to="/alerts"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <AlertTriangle size={20} />
+              <span>Alertas</span>
+            </NavLink>
           </li>
 
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            <Activity
+            {/* <Activity
               size={18}
               className="text-grid-dim group-hover:text-grid-cyan transition-colors"
             />
-            <span className="text-sm">Telemetría</span>
+            <span className="text-sm">Telemetría</span> */}
+            <NavLink
+              to="/telemetry"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <Activity size={20} />
+              <span>Telemetría</span>
+            </NavLink>
           </li>
 
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            <Cpu
+            {/* <Cpu
               size={18}
               className="text-grid-dim group-hover:text-grid-cyan transition-colors"
             />
-            <span className="text-sm">Estado Sistema</span>
+            <span className="text-sm">Estado Sistema</span> */}
+            <NavLink
+              to="/system"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <Server size={20} />
+              <span>Estado Sistema</span>
+            </NavLink>
           </li>
         </ul>
       </nav>
