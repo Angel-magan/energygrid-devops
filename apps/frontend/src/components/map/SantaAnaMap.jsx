@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "./SantaAnaMap.css";
 
 const DISTRICT_PATHS = [
   {
@@ -113,45 +112,57 @@ const SantaAnaMap = ({ data = [] }) => {
 
   return (
     <div
-      className="relative w-full h-full glass-panel p-4 overflow-hidden"
+      className="relative w-full h-full bg-grid-panel p-4 overflow-hidden select-none"
       onMouseMove={handleMouseMove}
     >
-      <h3 className="text-white text-sm font-semibold mb-2 flex items-center gap-2">
-        <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
-        MAPA DE CARGA REAL - OCCIDENTE
+      {/* ENCABEZADO DEL PANEL */}
+      <h3 className="text-grid-text text-xs font-bold tracking-wider mb-4 flex items-center gap-2 uppercase">
+        <span className="w-2 h-2 bg-grid-cyan rounded-full animate-pulse shadow-[0_0_8px_#2fb1ff]"></span>
+        Mapa de Carga Real - Sector Occidente
       </h3>
 
+      {/* SVG DEL MAPA */}
       <svg
         viewBox="250 50 750 900"
-        className="w-full h-auto drop-shadow-2xl"
-        style={{ filter: "drop-shadow(0 0 10px rgba(168, 85, 247, 0.2))" }}
+        className="w-full h-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] filter"
+        style={{ filter: "drop-shadow(0 0 15px rgba(48,85,117,0.15))" }}
       >
         {DISTRICT_PATHS.map((dist) => {
           const { consumption, isOverload } = getDistrictData(dist.id);
           const maxCapacity = districtCapacities[dist.id] || 5000;
-
           const usage = (consumption / maxCapacity) * 100;
-          // const isHighLoad = consumption > 4000 && consumption <= 4750;
+
+          // Nota: Asegúrate de que tu función getDistrictColor(usage) devuelva colores
+          // que combinen bien con tu nueva paleta (por ejemplo, opacidades de azul/cian).
+          const currentFill = getDistrictColor(usage);
 
           return (
             <motion.path
               key={dist.id}
               d={dist.d}
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{
                 opacity: 1,
                 scale: 1,
-                fill: getDistrictColor(usage),
+                fill: isOverload ? "rgba(248, 81, 73, 0.2)" : currentFill,
+                stroke: isOverload ? "#f85149" : "#30363d",
               }}
-              whileHover={{ scale: 1.02, fillOpacity: 0.8 }}
+              whileHover={{
+                scale: 1.01,
+                fillOpacity: 0.9,
+                stroke: isOverload ? "#f85149" : "#2fb1ff",
+                strokeWidth: 3,
+              }}
               onMouseEnter={() => setHoveredDistrict({ ...dist, consumption })}
               onMouseLeave={() => setHoveredDistrict(null)}
-              stroke="rgba(168, 85, 247, 0.5)"
-              strokeWidth="2"
-              className={`cursor-pointer transition-colors duration-500 ${isOverload ? "animate-pulse" : ""}`}
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              className={`cursor-pointer transition-all duration-300 origin-center ${
+                isOverload ? "animate-pulse" : ""
+              }`}
               style={{
                 filter: isOverload
-                  ? "drop-shadow(0 0 8px rgba(239, 68, 68, 0.8))"
+                  ? "drop-shadow(0 0 12px rgba(248, 81, 73, 0.6))"
                   : "none",
               }}
             />
@@ -159,48 +170,63 @@ const SantaAnaMap = ({ data = [] }) => {
         })}
       </svg>
 
-      {/* Tooltip Glassmorphism */}
+      {/* TOOLTIP CON GLASSMORPHISM INTEGRADO */}
       <AnimatePresence>
         {hoveredDistrict && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="fixed z-50 pointer-events-none p-3 rounded-xl border border-white/20 shadow-xl"
+            initial={{ opacity: 0, scale: 0.95, y: 5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className={`fixed z-50 pointer-events-none p-4 rounded-xl border shadow-2xl min-w-[160px]
+              ${
+                hoveredDistrict.consumption > 4750
+                  ? "border-grid-danger/50 bg-grid-deep/90 shadow-grid-danger/5"
+                  : "border-grid-border/80 bg-grid-panel/90 shadow-black/50"
+              }`}
             style={{
-              left: mousePos.x,
-              top: mousePos.y,
-              background: "rgba(15, 15, 25, 0.8)",
-              backdropFilter: "blur(10px)",
+              left: mousePos.x + 15, // Pequeño desfase para que no tape el cursor
+              top: mousePos.y + 15,
+              backdropFilter: "blur(12px)",
             }}
           >
-            <p className="text-white font-bold text-xs uppercase tracking-wider">
+            {/* Nombre del Distrito */}
+            <p className="text-grid-text font-black text-[11px] uppercase tracking-widest border-b border-grid-border/40 pb-1.5 mb-2">
               {hoveredDistrict.id}
             </p>
+
+            {/* Lectura de kW */}
             <div
-              className={`text-lg font-mono ${
+              className={`text-xl font-bold font-mono-tech ${
                 hoveredDistrict.consumption > 4750
-                  ? "text-red-400"
-                  : "text-purple-300"
+                  ? "text-grid-danger drop-shadow-[0_0_8px_rgba(248,81,73,0.3)]"
+                  : "text-grid-cyan drop-shadow-[0_0_8px_rgba(47,177,255,0.3)]"
               }`}
             >
               {hoveredDistrict.consumption.toLocaleString()}
-              <span className="text-[10px]"> kW</span>
+              <span className="text-xs font-sans font-medium text-grid-dim ml-0.5">
+                {" "}
+                kW
+              </span>
+            </div>
 
-              <p className="text-xs text-gray-300 mt-1">
-                Uso de capacidad:{" "}
+            {/* Uso de Capacidad */}
+            <p className="text-[11px] text-grid-dim mt-1.5 font-medium">
+              Capacidad:{" "}
+              <span className="font-mono-tech font-bold text-grid-text">
                 {(
                   (hoveredDistrict.consumption /
                     (districtCapacities[hoveredDistrict.id] || 5000)) *
                   100
                 ).toFixed(1)}
                 %
-              </p>
-            </div>
+              </span>
+            </p>
+
+            {/* Alerta de Sobrecarga Crítica */}
             {hoveredDistrict.consumption > 4750 && (
-              <p className="text-[10px] text-red-500 font-bold animate-bounce mt-1">
+              <div className="mt-3 bg-grid-danger/10 text-grid-danger text-[10px] font-black py-1 px-2 rounded border border-grid-danger/20 text-center tracking-wider animate-pulse">
                 ⚠️ SOBRECARGA CRÍTICA
-              </p>
+              </div>
             )}
           </motion.div>
         )}

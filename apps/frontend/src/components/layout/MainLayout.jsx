@@ -9,16 +9,23 @@ const MainLayout = ({ children }) => {
   const handleCloseSidebar = () => setIsSidebarOpen(false);
 
   return (
-    <div className={`main-layout ${isSidebarOpen ? "" : "sidebar-closed"}`}>
+    // .main-layout -> Contenedor flex principal que ocupa toda la pantalla y fija el color de fondo profundo
+    <div className="flex min-h-screen bg-grid-deep text-grid-text font-sans antialiased overflow-x-hidden">
+      {/* COMPONENTE SIDEBAR */}
       <Sidebar isOpen={isSidebarOpen} onClose={handleCloseSidebar} />
 
-      <div className="main-content">
+      {/* .main-content -> Contenedor flexible derecho que se expande automáticamente */}
+      <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+        {/* COMPONENTE TOPBAR */}
         <Topbar
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
         />
 
-        <div className="page-content">{children}</div>
+        {/* .page-content -> Área interna de scroll donde se renderizará el Dashboard */}
+        <div className="p-4 sm:p-6 md:p-8 max-w-[1600px] w-full mx-auto flex-1">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -12,7 +12,6 @@ import { Activity, Zap, AlertTriangle, Map as MapIcon } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import TelemetryTable from "../components/telemetry/TelemetryTable";
 import SantaAnaMap from "../components/map/SantaAnaMap";
-import "../styles/Dashboard.css";
 
 const Dashboard = ({ data = [] }) => {
   // --- CÁLCULOS SEGUROS (Evitan el error .toFixed) ---
@@ -39,93 +38,123 @@ const Dashboard = ({ data = [] }) => {
   // --- UI ---
   return (
     <MainLayout>
-      <div className="dashboard-container">
-        {/* HEADER */}
-        <header className="dashboard-header">
-          <h1>
-            EnergyGrid <span className="text-purple">Santa Ana</span>
+      {/* .dashboard-container -> Contenedor principal con paddings fluidos */}
+      <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto select-none">
+        {/* HEADER DEL DASHBOARD (.dashboard-header) */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-grid-text">
+            EnergyGrid{" "}
+            <span className="text-grid-cyan drop-shadow-[0_0_15px_rgba(47,177,255,0.4)]">
+              Santa Ana
+            </span>
           </h1>
-          <div className="status-badge">
-            <div className="pulse-dot"></div>
+
+          {/* .status-badge + .pulse-dot */}
+          <div className="bg-grid-blue/10 px-4 py-2 rounded-lg border border-grid-blue flex items-center gap-2.5 text-xs font-bold text-grid-cyan tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
             SISTEMA EN VIVO
           </div>
         </header>
 
-        {/* KPI CARDS */}
-        <div className="kpi-grid">
-          <div className="kpi-card">
-            <Zap size={24} color="#2fb1ff" />
+        {/* SECCIÓN DE TARJETAS METRICAS (.kpi-grid + .kpi-card) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Carga Total */}
+          <div className="bg-grid-panel p-6 rounded-xl border border-grid-border flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-grid-blue shadow-lg">
+            <div className="p-2.5 rounded-lg bg-grid-cyan/10">
+              <Zap size={24} className="text-grid-cyan" />
+            </div>
             <div>
-              <p>Carga Total Sistema</p>
-              <h3>{totalConsumption} kW</h3>
+              <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
+                Carga Total Sistema
+              </p>
+              <h3 className="text-2xl font-bold mt-1">{totalConsumption} kW</h3>
             </div>
           </div>
-          <div className="kpi-card">
-            <AlertTriangle
-              size={24}
-              color={alertCount > 0 ? "#f85149" : "#305575"}
-            />
+
+          {/* Alertas Críticas */}
+          <div className="bg-grid-panel p-6 rounded-xl border border-grid-border flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-grid-blue shadow-lg">
+            <div
+              className={`p-2.5 rounded-lg ${alertCount > 0 ? "bg-grid-danger/10" : "bg-grid-blue/10"}`}
+            >
+              <AlertTriangle
+                size={24}
+                className={
+                  alertCount > 0 ? "text-grid-danger" : "text-grid-blue"
+                }
+              />
+            </div>
             <div>
-              <p>Alertas Críticas</p>
-              <h3>{alertCount}</h3>
+              <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
+                Alertas Críticas
+              </p>
+              <h3 className="text-2xl font-bold mt-1">{alertCount}</h3>
             </div>
           </div>
-          <div className="kpi-card">
-            <Activity size={24} color="#2fb1ff" />
+
+          {/* Distritos Monitoreados */}
+          <div className="bg-grid-panel p-6 rounded-xl border border-grid-border flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-grid-blue shadow-lg">
+            <div className="p-2.5 rounded-lg bg-grid-cyan/10">
+              <Activity size={24} className="text-grid-cyan" />
+            </div>
             <div>
-              <p>Distritos Monitoreados</p>
-              <h3>13</h3>
+              <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
+                Distritos Monitoreados
+              </p>
+              <h3 className="text-2xl font-bold mt-1">13</h3>
             </div>
           </div>
         </div>
 
-        {/* CONTENIDO PRINCIPAL */}
-        <div className="main-grid">
-          {/* MAPA VISUAL */}
-          {/* MAPA VISUAL DINÁMICO */}
-          <div className="glass-panel map-panel">
-            <div className="panel-header">
-              <MapIcon size={20} /> <h2>Mapa de Carga - Sector Occidente</h2>
+        {/* CONTENIDO PRINCIPAL: MAPA + GRÁFICA (.main-grid) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch">
+          {/* PANELES TIPO GLASS: MAPA VISUAL */}
+          <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">
+            <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
+              <MapIcon size={20} className="text-grid-cyan" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
+                Mapa de Carga - Sector Occidente
+              </h2>
             </div>
-            <div
-              className="map-placeholder"
-              style={{ padding: 0, height: "100%", minHeight: "300px" }}
-            >
+
+            {/* .map-placeholder */}
+            <div className="bg-grid-deep/30 rounded-xl border border-grid-border/40 overflow-hidden min-h-[340px] flex-1">
               <SantaAnaMap data={data} />
             </div>
           </div>
 
-          {/* GRÁFICA DE TENDENCIA */}
-          <div className="glass-panel chart-panel">
-            <div className="panel-header">
-              <Activity size={24} color="#2fb1ff" />{" "}
-              <h2>Flujo de Energía (Real-Time)</h2>
+          {/* PANELES TIPO GLASS: GRÁFICA DE TENDENCIA */}
+          <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">
+            <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
+              <Activity size={20} className="text-grid-cyan" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
+                Flujo de Energía (Real-Time)
+              </h2>
             </div>
-            <div style={{ width: "100%", height: "300px", minHeight: "300px" }}>
+
+            <div className="w-full h-[320px] mt-auto">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorCons" x1="0" y1="0" x2="0" y2="1">
-                      {/* El color de arriba es tu cian con opacidad */}
-                      <stop offset="5%" stopColor="#2fb1ff" stopOpacity={0.4} />
+                      <stop offset="5%" stopColor="#2fb1ff" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#2fb1ff" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="#222"
+                    stroke="#161b22"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="substation_id"
-                    stroke="#555"
-                    fontSize={10}
+                    stroke="#8b949e"
+                    fontSize={11}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    stroke="#555"
-                    fontSize={10}
+                    stroke="#8b949e"
+                    fontSize={11}
                     tickLine={false}
                     axisLine={false}
                   />
@@ -134,14 +163,14 @@ const Dashboard = ({ data = [] }) => {
                       backgroundColor: "#161b22",
                       border: "1px solid #30363d",
                       borderRadius: "8px",
-                      color: "#f0f6fc",
                     }}
+                    itemStyle={{ color: "#2fb1ff" }}
                   />
                   <Area
                     type="monotone"
                     dataKey="consumption_kw"
-                    stroke="#2fb1ff" /* Línea cian */
-                    strokeWidth={3}
+                    stroke="#2fb1ff"
+                    strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorCons)"
                   />
@@ -151,13 +180,17 @@ const Dashboard = ({ data = [] }) => {
           </div>
         </div>
 
-        {/* TABLA DE TELEMETRÍA */}
-        <div className="glass-panel table-panel">
-          <div className="panel-header">
-            <Activity size={24} color="#2fb1ff" />{" "}
-            <h2>Registro de Telemetría Reciente</h2>
+        {/* TABLA DE TELEMETRÍA (.glass-panel + .table-panel) */}
+        <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
+            <Activity size={20} className="text-grid-cyan" />{" "}
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
+              Registro de Telemetría Reciente
+            </h2>
           </div>
-          <TelemetryTable data={data} />
+          <div className="w-full">
+            <TelemetryTable data={data} />
+          </div>
         </div>
       </div>
     </MainLayout>

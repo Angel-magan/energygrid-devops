@@ -1,44 +1,58 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: dark; /* Esto ayuda a que los inputs y barras de scroll sean oscuras */
-  background-color: #0a0a0a;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: initial; /* Quitamos el centrado forzado */
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #0a0a0a;
+@theme {
+  /* 1. Registramos tu paleta de colores de la imagen */
+  --color-grid-deep: #0d1117; /* Fondo oscuro profundo */
+  --color-grid-panel: #161b22; /* Fondo de las tarjetas/paneles */
+  --color-grid-blue: #305575; /* Azul medio para detalles o bordes */
+  --color-grid-cyan: #2fb1ff; /* El cian brillante de tu paleta */
+  --color-grid-text: #f0f6fc; /* Blanco azulado para títulos */
+  --color-grid-dim: #8b949e; /* Gris para textos secundarios */
+  --color-grid-border: #30363d; /* Color para bordes sutiles */
+  --color-grid-danger: #f85149; /* Rojo para alertas de sobrecarga */
 }
 
-#root {
-  width: 100%; /* Ahora ocupará toda la pantalla */
-  margin: 0;
-  padding: 0;
-  text-align: left; /* Alineación normal para un dashboard */
-}
+@layer base {
+  /* 2. Estilos globales para Body y HTML (Limpieza de resets de Vite) */
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: var(--color-grid-deep);
+    color: var(--color-grid-text);
+    font-family: "Inter", system-ui, sans-serif;
+    color-scheme: dark; /* Mantiene los inputs y scrollbars oscuros nativamente */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
 
-/* Scrollbar moderno (Opcional pero elegante) */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  #root {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 3. Estilo de tipografía técnica automática para números */
+  h3,
+  .font-mono-tech {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    letter-spacing: -0.5px;
+  }
+
+  /* 4. Tu Scrollbar moderno global unificado */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-grid-deep);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-grid-border);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-grid-blue);
+  }
 }
