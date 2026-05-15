@@ -10,8 +10,12 @@ import {
 const Sidebar = ({ isOpen = true, onClose }) => {
   return (
     <aside
-      className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-[260px] bg-grid-panel border-r border-grid-border p-5 text-grid-text transition-all duration-300 ease-in-out md:static md:translate-x-0
-        ${isOpen ? "translate-x-0" : "-translate-x-full md:w-0 md:p-0 md:border-r-0"}`}
+      className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col min-w-0 w-[260px] bg-grid-panel border-r border-grid-border p-5 text-grid-text transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto md:static md:translate-x-0
+        ${
+          isOpen
+            ? "translate-x-0"
+            : "-translate-x-full md:w-0 md:p-0 md:border-r-0 md:overflow-hidden md:opacity-0 md:pointer-events-none"
+        }`}
       aria-hidden={!isOpen}
     >
       {/* HEADER DEL SIDEBAR */}
