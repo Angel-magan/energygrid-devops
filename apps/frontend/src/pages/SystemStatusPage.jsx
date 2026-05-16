@@ -18,8 +18,7 @@ import {
 } from "lucide-react";
 
 import MainLayout from "../components/layout/MainLayout";
-
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+import { useSystemStatus } from "../hooks/useSystemStatus";
 
 const formatMs = (value) => {
   const num = Number(value);
@@ -74,243 +73,60 @@ const SystemStatusPage = ({
 } = {}) => {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
-  const [simServices, setSimServices] = useState(() => [
-    {
-      key: "backend",
-      name: "Backend API",
-      icon: Server,
-      status: "ONLINE",
-      detail: "http://localhost:3000/api",
-    },
-    {
-      key: "postgres",
-      name: "PostgreSQL",
-      icon: Database,
-      status: "ONLINE",
-      detail: "energygrid-db:5432",
-    },
-    {
-      key: "simulator",
-      name: "Simulator",
-      icon: RefreshCw,
-      status: "ONLINE",
-      detail: "IoT stream 5s",
-    },
-    {
-      key: "frontend",
-      name: "Frontend",
-      icon: Globe,
-      status: "ONLINE",
-      detail: "http://localhost:5173",
-    },
-  ]);
-
-  const [simMetrics, setSimMetrics] = useState(() => ({
-    cpu: 28,
-    ram: 54,
-    apiLatencyMs: 86,
-    eventsPerSec: 3.2,
-    activeConnections: 12,
-  }));
-
-  const [simHealth, setSimHealth] = useState(() => [
-    {
-      key: "hc-api",
-      service: "Backend API",
-      endpoint: "/api/telemetry",
-      status: "ONLINE",
-      responseTimeMs: 92,
-    },
-    {
-      key: "hc-db",
-      service: "PostgreSQL",
-      endpoint: "tcp://db:5432",
-      status: "ONLINE",
-      responseTimeMs: 18,
-    },
-    {
-      key: "hc-sim",
-      service: "Simulator",
-      endpoint: "POST /api/telemetry",
-      status: "ONLINE",
-      responseTimeMs: 55,
-    },
-    {
-      key: "hc-fe",
-      service: "Frontend",
-      endpoint: "/",
-      status: "ONLINE",
-      responseTimeMs: 44,
-    },
-  ]);
-
-  const [simScaling, setSimScaling] = useState(() => ({
-    instancesActive: 2,
-    loadBalancing: "ROUND_ROBIN",
-    autoscaling: "ENABLED",
-  }));
-
-  const [simLogs, setSimLogs] = useState(() => {
-    const base = Date.now();
-    return [
-      {
-        id: "log-1",
-        ts: base - 45_000,
-        level: "INFO",
-        service: "Backend API",
-        message: "Servicio iniciado y escuchando en :3000",
-      },
-      {
-        id: "log-2",
-        ts: base - 30_000,
-        level: "INFO",
-        service: "PostgreSQL",
-        message: "Conexiones listas · pool saludable",
-      },
-      {
-        id: "log-3",
-        ts: base - 18_000,
-        level: "WARN",
-        service: "Backend API",
-        message: "Alta carga detectada en sector occidente",
-      },
-      {
-        id: "log-4",
-        ts: base - 12_000,
-        level: "INFO",
-        service: "Autoscaling",
-        message: "Escalabilidad activada: +1 instancia",
-      },
-      {
-        id: "log-5",
-        ts: base - 6_000,
-        level: "INFO",
-        service: "Simulator",
-        message: "Reconexión exitosa · stream reanudado",
-      },
-    ];
-  });
+  const { data: statusData, error } = useSystemStatus(5000);
 
   useEffect(() => {
     const interval = setInterval(() => setNowMs(Date.now()), 2000);
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Variación suave de métricas (simulada)
-      setSimMetrics((m) => {
-        const cpu = clamp(m.cpu + (Math.random() * 8 - 4), 5, 95);
-        const ram = clamp(m.ram + (Math.random() * 6 - 3), 15, 92);
-        const apiLatencyMs = clamp(
-          m.apiLatencyMs + (Math.random() * 30 - 15),
-          25,
-          420,
-        );
-        const eventsPerSec = clamp(
-          m.eventsPerSec + (Math.random() * 1.2 - 0.6),
-          0.2,
-          18,
-        );
-        const activeConnections = clamp(
-          m.activeConnections + Math.round(Math.random() * 6 - 3),
-          0,
-          250,
-        );
-        return { cpu, ram, apiLatencyMs, eventsPerSec, activeConnections };
-      });
+  const iconByKey = useMemo(
+    () => ({
+      backend: Server,
+      postgres: Database,
+      simulator: RefreshCw,
+      frontend: Globe,
+    }),
+    [],
+  );
 
-      // Degradación ocasional (simulada)
-      setSimServices((s) => {
-        const roll = Math.random();
-        if (roll < 0.06) {
-          const idx = Math.floor(Math.random() * s.length);
-          const next = [...s];
-          const current = next[idx];
-          const status =
-            current.status === "ONLINE"
-              ? "DEGRADED"
-              : current.status === "DEGRADED"
-                ? "ONLINE"
-                : "ONLINE";
-          next[idx] = { ...current, status };
-          return next;
-        }
-        return s;
-      });
+  const services = useMemo(() => {
+    const raw =
+      (Array.isArray(servicesProp) && servicesProp) ||
+      (Array.isArray(statusData?.services) && statusData.services) ||
+      [];
+    return raw.map((svc) => ({
+      ...svc,
+      icon: svc.icon || iconByKey[svc.key] || Cloud,
+      detail: svc.detail || svc.endpoint || "—",
+    }));
+  }, [servicesProp, statusData, iconByKey]);
 
-      setSimHealth((rows) =>
-        rows.map((r) => ({
-          ...r,
-          responseTimeMs: clamp(
-            r.responseTimeMs + (Math.random() * 40 - 20),
-            10,
-            650,
-          ),
-        })),
-      );
+  const metrics = metricsProp ||
+    statusData?.metrics || {
+      cpu: null,
+      ram: null,
+      apiLatencyMs: null,
+      eventsPerSec: null,
+      activeConnections: null,
+    };
 
-      // Logs simulados
-      setSimLogs((prev) => {
-        const roll = Math.random();
-        if (roll < 0.35) return prev;
+  const healthChecks =
+    (Array.isArray(healthChecksProp) && healthChecksProp) ||
+    (Array.isArray(statusData?.healthChecks) && statusData.healthChecks) ||
+    [];
 
-        const candidates = [
-          {
-            level: "INFO",
-            service: "Backend API",
-            message: "Servicio iniciado",
-          },
-          {
-            level: "WARN",
-            service: "Backend API",
-            message: "Alta carga detectada",
-          },
-          {
-            level: "INFO",
-            service: "Autoscaling",
-            message: "Escalabilidad activada",
-          },
-          {
-            level: "INFO",
-            service: "Simulator",
-            message: "Reconexión de servicio",
-          },
-        ];
-        const pick = candidates[Math.floor(Math.random() * candidates.length)];
-        const next = [
-          {
-            id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            ts: Date.now(),
-            ...pick,
-          },
-          ...prev,
-        ].slice(0, 18);
-        return next;
-      });
+  const logs =
+    (Array.isArray(logsProp) && logsProp) ||
+    (Array.isArray(statusData?.logs) && statusData.logs) ||
+    [];
 
-      // Scaling simulada (muy suave)
-      setSimScaling((sc) => {
-        const scaleRoll = Math.random();
-        if (scaleRoll < 0.1) {
-          const delta = Math.random() > 0.5 ? 1 : -1;
-          const instancesActive = clamp(sc.instancesActive + delta, 1, 6);
-          return { ...sc, instancesActive };
-        }
-        return sc;
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const services = Array.isArray(servicesProp) ? servicesProp : simServices;
-  const metrics = metricsProp ?? simMetrics;
-  const healthChecks = Array.isArray(healthChecksProp)
-    ? healthChecksProp
-    : simHealth;
-  const logs = Array.isArray(logsProp) ? logsProp : simLogs;
-  const scaling = scalingProp ?? simScaling;
+  const scaling = scalingProp ||
+    statusData?.scaling || {
+      instancesActive: null,
+      loadBalancing: null,
+      autoscaling: null,
+    };
 
   const overallStatus = useMemo(() => {
     const statuses = services.map((s) => s.status);
@@ -346,6 +162,20 @@ const SystemStatusPage = ({
             </div>
           </div>
         </header>
+
+        {error && (
+          <div className="mb-6 bg-grid-panel border border-grid-danger/30 rounded-2xl p-5 shadow-2xl shadow-grid-danger/5">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="text-grid-danger mt-0.5" size={18} />
+              <div>
+                <p className="font-bold text-grid-text">Error de conexión</p>
+                <p className="text-sm text-grid-dim mt-1 font-mono-tech">
+                  {error}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Status cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
