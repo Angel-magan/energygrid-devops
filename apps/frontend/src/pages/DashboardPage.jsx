@@ -35,12 +35,9 @@ const Dashboard = ({ data = [] }) => {
     return [...data].slice(0, 15).reverse();
   }, [data]);
 
-  // --- UI ---
   return (
     <MainLayout>
-      {/* .dashboard-container -> Contenedor principal con paddings fluidos */}
       <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto select-none">
-        {/* HEADER DEL DASHBOARD (.dashboard-header) */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-grid-text">
             EnergyGrid{" "}
@@ -48,17 +45,12 @@ const Dashboard = ({ data = [] }) => {
               Santa Ana
             </span>
           </h1>
-
-          {/* .status-badge + .pulse-dot */}
           <div className="bg-grid-blue/10 px-4 py-2 rounded-lg border border-grid-blue flex items-center gap-2.5 text-xs font-bold text-grid-cyan tracking-wider">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
             SISTEMA EN VIVO
           </div>
         </header>
-
-        {/* SECCIÓN DE TARJETAS METRICAS (.kpi-grid + .kpi-card) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Carga Total */}
           <div className="bg-grid-panel p-6 rounded-xl border border-grid-border flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-grid-blue shadow-lg">
             <div className="p-2.5 rounded-lg bg-grid-cyan/10">
               <Zap size={24} className="text-grid-cyan" />
@@ -70,8 +62,6 @@ const Dashboard = ({ data = [] }) => {
               <h3 className="text-2xl font-bold mt-1">{totalConsumption} kW</h3>
             </div>
           </div>
-
-          {/* Alertas Críticas */}
           <div className="bg-grid-panel p-6 rounded-xl border border-grid-border flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-grid-blue shadow-lg">
             <div
               className={`p-2.5 rounded-lg ${alertCount > 0 ? "bg-grid-danger/10" : "bg-grid-blue/10"}`}
@@ -90,8 +80,6 @@ const Dashboard = ({ data = [] }) => {
               <h3 className="text-2xl font-bold mt-1">{alertCount}</h3>
             </div>
           </div>
-
-          {/* Distritos Monitoreados */}
           <div className="bg-grid-panel p-6 rounded-xl border border-grid-border flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-grid-blue shadow-lg">
             <div className="p-2.5 rounded-lg bg-grid-cyan/10">
               <Activity size={24} className="text-grid-cyan" />
@@ -104,10 +92,7 @@ const Dashboard = ({ data = [] }) => {
             </div>
           </div>
         </div>
-
-        {/* CONTENIDO PRINCIPAL: MAPA + GRÁFICA (.main-grid) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch">
-          {/* PANELES TIPO GLASS: MAPA VISUAL */}
           <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">
             <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
               <MapIcon size={20} className="text-grid-cyan" />
@@ -115,14 +100,10 @@ const Dashboard = ({ data = [] }) => {
                 Mapa de Carga - Sector Occidente
               </h2>
             </div>
-
-            {/* .map-placeholder */}
             <div className="bg-grid-deep/30 rounded-xl border border-grid-border/40 overflow-hidden min-h-[340px] flex-1">
               <SantaAnaMap data={data} />
             </div>
           </div>
-
-          {/* PANELES TIPO GLASS: GRÁFICA DE TENDENCIA */}
           <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">
             <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
               <Activity size={20} className="text-grid-cyan" />
@@ -180,7 +161,6 @@ const Dashboard = ({ data = [] }) => {
           </div>
         </div>
 
-        {/* TABLA DE TELEMETRÍA (.glass-panel + .table-panel) */}
         <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
             <Activity size={20} className="text-grid-cyan" />{" "}
@@ -188,7 +168,10 @@ const Dashboard = ({ data = [] }) => {
               Registro de Telemetría Reciente
             </h2>
           </div>
-          <div className="w-full">
+          <div
+            className="w-full max-h-[400px] overflow-y-auto overflow-x-auto pr-2
+              scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent"
+          >
             <TelemetryTable data={data} />
           </div>
         </div>

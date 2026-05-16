@@ -338,8 +338,6 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
             </div>
           </div>
         )}
-
-        {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -425,8 +423,6 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
             </div>
           </motion.div>
         </div>
-
-        {/* Filtros */}
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
           <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
             <Filter size={20} className="text-grid-cyan" />
@@ -507,32 +503,32 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
             </div>
           </div>
         </section>
-
-        {/* Tabla principal */}
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
-          <div className="flex items-center justify-between gap-4 mb-6 border-b border-grid-border/50 pb-4">
+          <div className="flex items-center justify-between gap-4 mb-6 border-b border-grid-border/50 pb-4 select-none">
             <div className="flex items-center gap-3">
               <ShieldAlert size={20} className="text-grid-cyan" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
                 Telemetría en vivo
               </h2>
             </div>
-            <div className="text-xs text-grid-dim font-mono-tech">
+            <div className="text-xs text-grid-dim font-mono-tech bg-grid-deep/40 px-2.5 py-1 rounded border border-grid-border/30">
               Mostrando {filteredRows.length} / {enrichedRows.length}
             </div>
           </div>
-
-          <div className="w-full overflow-x-auto rounded-xl">
+          <div
+            className="w-full max-h-[500px] overflow-y-auto overflow-x-auto pr-2
+    scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
+          >
             <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-225">
-              <thead>
+              <thead className="sticky top-0 bg-grid-panel z-10 shadow-[0_2px_0_0_rgba(48,54,61,0.5)]">
                 <tr className="text-xs font-bold uppercase tracking-widest text-grid-dim select-none">
-                  <th className="px-5 pb-1">timestamp</th>
-                  <th className="px-5 pb-1">district_id</th>
-                  <th className="px-5 pb-1">substation_id</th>
-                  <th className="px-5 pb-1">consumption_kw</th>
-                  <th className="px-5 pb-1">voltage</th>
-                  <th className="px-5 pb-1">frequency_hz</th>
-                  <th className="px-5 pb-1">status</th>
+                  <th className="px-5 pb-3 pt-1">timestamp</th>
+                  <th className="px-5 pb-3 pt-1">district_id</th>
+                  <th className="px-5 pb-3 pt-1">substation_id</th>
+                  <th className="px-5 pb-3 pt-1">consumption_kw</th>
+                  <th className="px-5 pb-3 pt-1">voltage</th>
+                  <th className="px-5 pb-3 pt-1">frequency_hz</th>
+                  <th className="px-5 pb-3 pt-1">status</th>
                 </tr>
               </thead>
               <tbody>
@@ -590,10 +586,11 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                       </td>
 
                       <td className="p-4 text-sm border-y border-grid-border/40 group-hover:border-grid-blue/30">
-                        <span className="font-mono-tech font-semibold text-grid-dim">
+                        <span className="font-mono-tech font-semibold text-grid-text">
                           {Number.isFinite(r.voltage)
                             ? r.voltage.toFixed(1)
-                            : "—"}
+                            : "—"}{" "}
+                          V
                         </span>
                       </td>
 
@@ -601,7 +598,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                         <span className="font-mono-tech font-semibold text-grid-dim">
                           {Number.isFinite(r.frequencyHz)
                             ? r.frequencyHz.toFixed(2)
-                            : "—"}
+                            : "—"}{" "}
+                          Hz
                         </span>
                       </td>
 
@@ -617,9 +615,10 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                 })}
               </tbody>
             </table>
-
             {!loading && filteredRows.length === 0 && (
-              <div className="text-sm text-grid-dim mt-2">Sin resultados.</div>
+              <div className="text-sm text-grid-dim py-8 text-center select-none">
+                Sin resultados de telemetría disponibles en este sector.
+              </div>
             )}
           </div>
         </section>

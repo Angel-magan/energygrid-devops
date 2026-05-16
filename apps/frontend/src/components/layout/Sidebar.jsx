@@ -18,7 +18,6 @@ const Sidebar = ({ isOpen = true, onClose }) => {
         }`}
       aria-hidden={!isOpen}
     >
-      {/* HEADER DEL SIDEBAR */}
       <div className="flex items-center justify-between gap-3 mb-8 pb-4 border-b border-grid-border/40">
         <h2 className="text-sm font-black tracking-widest text-grid-text flex items-center gap-2">
           <span className="text-grid-cyan animate-pulse">⚡</span> ENERGYGRID
@@ -32,14 +31,9 @@ const Sidebar = ({ isOpen = true, onClose }) => {
           <X size={18} />
         </button>
       </div>
-
-      {/* MENÚ DE NAVEGACIÓN */}
       <nav className="flex-1">
         <ul className="space-y-1.5">
-          {/* Item Activo (Dashboard) */}
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-cyan bg-grid-blue/15 border border-grid-blue/30 font-semibold transition-all cursor-pointer">
-            {/* <LayoutDashboard size={18} className="text-grid-cyan" />
-            <span className="text-sm">Dashboard</span> */}
             <NavLink
               to="/"
               className={({ isActive }) =>
@@ -55,14 +49,7 @@ const Sidebar = ({ isOpen = true, onClose }) => {
               <span>Dashboard</span>
             </NavLink>
           </li>
-
-          {/* Items Secundarios */}
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            {/* <AlertTriangle
-              size={18}
-              className="text-grid-dim group-hover:text-grid-cyan transition-colors"
-            />
-            <span className="text-sm">Alertas</span> */}
             <NavLink
               to="/alerts"
               className={({ isActive }) =>
@@ -80,11 +67,6 @@ const Sidebar = ({ isOpen = true, onClose }) => {
           </li>
 
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            {/* <Activity
-              size={18}
-              className="text-grid-dim group-hover:text-grid-cyan transition-colors"
-            />
-            <span className="text-sm">Telemetría</span> */}
             <NavLink
               to="/telemetry"
               className={({ isActive }) =>
@@ -102,11 +84,6 @@ const Sidebar = ({ isOpen = true, onClose }) => {
           </li>
 
           <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            {/* <Cpu
-              size={18}
-              className="text-grid-dim group-hover:text-grid-cyan transition-colors"
-            />
-            <span className="text-sm">Estado Sistema</span> */}
             <NavLink
               to="/system"
               className={({ isActive }) =>
