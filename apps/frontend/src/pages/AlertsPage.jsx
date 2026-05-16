@@ -186,8 +186,6 @@ const AlertsPage = () => {
             </div>
           </div>
         </header>
-
-        {/* Estados de carga / error */}
         {error && (
           <div className="mb-6 bg-grid-panel border border-grid-danger/30 rounded-2xl p-5 shadow-2xl shadow-grid-danger/5">
             <div className="flex items-start gap-3">
@@ -201,8 +199,6 @@ const AlertsPage = () => {
             </div>
           </div>
         )}
-
-        {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -298,15 +294,16 @@ const AlertsPage = () => {
 
         {/* Listado de alertas */}
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
-          <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
+          <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4 select-none">
             <AlertTriangle size={20} className="text-grid-cyan" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
               Alertas por distrito (última lectura)
             </h2>
           </div>
-
-          {/* Mobile cards */}
-          <div className="grid grid-cols-1 gap-4 sm:hidden">
+          <div
+            className="grid grid-cols-1 gap-4 sm:hidden max-h-[400px] overflow-y-auto pr-1
+    scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent"
+          >
             {districtAlerts.map((a) => {
               const meta = severityMeta[a.severity];
               const usage = clamp(a.usagePct, 0, 100);
@@ -374,24 +371,24 @@ const AlertsPage = () => {
                 </motion.div>
               );
             })}
-
             {!loading && districtAlerts.length === 0 && (
-              <div className="text-sm text-grid-dim">
+              <div className="text-sm text-grid-dim py-4 text-center">
                 Sin datos de telemetría.
               </div>
             )}
           </div>
-
-          {/* Desktop table */}
-          <div className="hidden sm:block w-full overflow-x-auto rounded-xl">
+          <div
+            className="hidden sm:block w-full max-h-[450px] overflow-y-auto overflow-x-auto pr-2
+    scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
+          >
             <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-225">
-              <thead>
+              <thead className="sticky top-0 bg-grid-panel z-10 shadow-[0_2px_0_0_rgba(48,54,61,0.5)]">
                 <tr className="text-xs font-bold uppercase tracking-widest text-grid-dim select-none">
-                  <th className="px-5 pb-1">Distrito</th>
-                  <th className="px-5 pb-1">Consumo actual</th>
-                  <th className="px-5 pb-1">Capacidad máxima</th>
-                  <th className="px-5 pb-1">% de uso</th>
-                  <th className="px-5 pb-1">Severidad</th>
+                  <th className="px-5 pb-3 pt-1">Distrito</th>
+                  <th className="px-5 pb-3 pt-1">Consumo actual</th>
+                  <th className="px-5 pb-3 pt-1">Capacidad máxima</th>
+                  <th className="px-5 pb-3 pt-1">% de uso</th>
+                  <th className="px-5 pb-3 pt-1">Severidad</th>
                 </tr>
               </thead>
               <tbody>
@@ -446,16 +443,13 @@ const AlertsPage = () => {
                 })}
               </tbody>
             </table>
-
             {!loading && districtAlerts.length === 0 && (
-              <div className="text-sm text-grid-dim mt-2">
+              <div className="text-sm text-grid-dim mt-4 py-6 text-center">
                 Sin datos de telemetría.
               </div>
             )}
           </div>
         </section>
-
-        {/* Recomendaciones */}
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
             <ArrowRightLeft size={20} className="text-grid-cyan" />
