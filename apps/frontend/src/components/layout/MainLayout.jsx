@@ -7,6 +7,11 @@ const MainLayout = ({ children }) => {
 
   const handleToggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const handleCloseSidebar = () => setIsSidebarOpen(false);
+  const handleLogout = () => {
+    localStorage.removeItem("eg_auth_token");
+    localStorage.removeItem("eg_auth_user");
+    window.location.assign("/login");
+  };
 
   return (
     <div className="flex min-h-screen bg-grid-deep text-grid-text font-sans antialiased overflow-x-hidden">
@@ -15,6 +20,7 @@ const MainLayout = ({ children }) => {
         <Topbar
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
+          onLogout={handleLogout}
         />
         <div className="p-4 sm:p-6 md:p-8 max-w-[1600px] w-full mx-auto flex-1">
           {children}

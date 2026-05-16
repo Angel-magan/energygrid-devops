@@ -41,6 +41,50 @@ services:
     networks:
       - energygrid_network
 
+  # Auth Database: PostgreSQL separado para usuarios y roles
+  eg-auth-db:
+    image: postgres:15-alpine
+    container_name: eg-auth-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - eg_auth_db_data:/var/lib/postgresql/data
+      - ./infrastructure/auth-database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER} -d ${AUTH_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - energygrid_network
+
+  # Auth Service: Login, JWT y RBAC
+  eg-auth-service:
+    build:
+      context: ./apps/auth-service
+      dockerfile: Dockerfile
+    container_name: eg-auth-service
+    restart: unless-stopped
+    depends_on:
+      eg-auth-db:
+        condition: service_healthy
+    ports:
+      - "${AUTH_PORT}:${AUTH_PORT}"
+    environment:
+      AUTH_DATABASE_URL: postgres://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@eg-auth-db:5432/${AUTH_DB_NAME}
+      AUTH_PORT: ${AUTH_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      NODE_ENV: ${NODE_ENV}
+      FRONTEND_URL: http://localhost:5173
+    networks:
+      - energygrid_network
+
   # Simulator: Python (IoT Telemetry)
   eg-simulator:
     build:
@@ -82,3 +126,4 @@ networks:
 
 volumes:
   eg_db_data:
+  eg_auth_db_data:
