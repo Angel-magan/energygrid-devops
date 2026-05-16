@@ -6,3 +6,8 @@ export const fetchTelemetry = async () => {
   const response = await axios.get(`${API_URL}/telemetry`);
   return response.data;
 };
+
+export const fetchSystemStatus = async () => {
+  const response = await axios.get(`${API_URL}/system/status`);
+  return response.data;
+};
