@@ -8,12 +8,15 @@ import TelemetryPage from "./pages/TelemetryPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
 
 function App() {
-  const { data } = useTelemetry(5000);
+  const { data, loading } = useTelemetry(5000);
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<DashboardPage data={data} />} />
+        <Route
+          path="/"
+          element={<DashboardPage data={data} loading={loading} />}
+        />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/telemetry" element={<TelemetryPage />} />
         <Route path="/system" element={<SystemStatusPage />} />
