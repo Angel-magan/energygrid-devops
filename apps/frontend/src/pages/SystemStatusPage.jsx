@@ -176,8 +176,6 @@ const SystemStatusPage = ({
             </div>
           </div>
         )}
-
-        {/* Status cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {services.map((svc, idx) => {
             const meta = statusMeta[svc.status] ?? statusMeta.DEGRADED;
@@ -235,8 +233,6 @@ const SystemStatusPage = ({
             );
           })}
         </div>
-
-        {/* Métricas DevOps */}
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
           <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
             <Gauge size={20} className="text-grid-cyan" />
@@ -311,8 +307,6 @@ const SystemStatusPage = ({
             </div>
           </div>
         </section>
-
-        {/* Health checks */}
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
           <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
             <Server size={20} className="text-grid-cyan" />
@@ -362,18 +356,18 @@ const SystemStatusPage = ({
             </table>
           </div>
         </section>
-
-        {/* Logs + Scalabilidad */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
+            <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4 select-none">
               <Terminal size={20} className="text-grid-cyan" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
                 Logs del sistema
               </h2>
             </div>
-
-            <div className="space-y-2">
+            <div
+              className="space-y-2 max-h-[350px] overflow-y-auto pr-2
+    scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
+            >
               {logs.map((l) => {
                 const levelMeta =
                   l.level === "WARN"
@@ -385,19 +379,19 @@ const SystemStatusPage = ({
                 return (
                   <div
                     key={l.id}
-                    className="bg-grid-deep/40 border border-grid-border/40 rounded-xl p-3"
+                    className="bg-grid-deep/40 border border-grid-border/40 rounded-xl p-3 hover:bg-grid-blue/5 transition-colors duration-150"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs text-grid-dim font-mono-tech">
                           {relativeFrom(l.ts, nowMs)} · {l.service}
                         </p>
-                        <p className="text-sm text-grid-text mt-1 truncate">
+                        <p className="text-sm text-grid-text mt-1 font-mono-tech break-words">
                           {l.message}
                         </p>
                       </div>
                       <span
-                        className={`text-[11px] font-extrabold tracking-widest px-2.5 py-1 rounded-full border ${levelMeta.badge}`}
+                        className={`text-[11px] font-extrabold tracking-widest px-2.5 py-1 rounded-full border shrink-0 ${levelMeta.badge}`}
                       >
                         {l.level}
                       </span>
@@ -405,6 +399,11 @@ const SystemStatusPage = ({
                   </div>
                 );
               })}
+              {logs.length === 0 && (
+                <div className="text-sm text-grid-dim py-6 text-center font-mono-tech">
+                  No hay eventos recientes en el buffer de la consola.
+                </div>
+              )}
             </div>
           </section>
 
