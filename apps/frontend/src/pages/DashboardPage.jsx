@@ -18,28 +18,47 @@ import {
 import MainLayout from "../components/layout/MainLayout";
 import TelemetryTable from "../components/telemetry/TelemetryTable";
 import SantaAnaMap from "../components/map/SantaAnaMap";
+import { isSuspiciousString } from "../utils/sanitizers";
 
 const Dashboard = ({ data = [], loading = false }) => {
+  // Filtrar filas sospechosas para el dashboard (mapa/recomendaciones/tabla)
+  const filteredData = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return data.filter(
+      (r) =>
+        !isSuspiciousString(r?.district_id) &&
+        !isSuspiciousString(r?.substation_id),
+    );
+  }, [data]);
+
   // --- CÁLCULOS SEGUROS (Evitan el error .toFixed) ---
   const totalConsumption = useMemo(() => {
-    if (!data || data.length === 0) return "0.00";
-    const total = data.reduce(
+    if (!filteredData || filteredData.length === 0) return "0.00";
+    const total = filteredData.reduce(
       (acc, curr) => acc + (Number(curr.consumption_kw) || 0),
       0,
     );
     return total.toFixed(2);
-  }, [data]);
+  }, [filteredData]);
 
   const alertCount = useMemo(() => {
-    if (!data) return 0;
-    return data.filter((d) => Number(d.consumption_kw) > 4750).length;
-  }, [data]);
+    if (!filteredData) return 0;
+    return filteredData.filter((d) => Number(d.consumption_kw) > 4750).length;
+  }, [filteredData]);
 
   const chartData = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!filteredData || filteredData.length === 0) return [];
     // Tomamos los últimos 15 registros y los ordenamos para la gráfica
-    return [...data].slice(0, 15).reverse();
-  }, [data]);
+    return [...filteredData].slice(0, 15).reverse();
+  }, [filteredData]);
+
+  const districtsCount = useMemo(() => {
+    if (!filteredData) return 0;
+    const set = new Set(
+      filteredData.map((r) => String(r.district_id || "")).filter(Boolean),
+    );
+    return set.size;
+  }, [filteredData]);
 
   if (loading) {
     return (
@@ -141,7 +160,7 @@ const Dashboard = ({ data = [], loading = false }) => {
               <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
                 Distritos Monitoreados
               </p>
-              <h3 className="text-2xl font-bold mt-1">13</h3>
+              <h3 className="text-2xl font-bold mt-1">{districtsCount}</h3>
             </div>
           </div>
         </div>
@@ -154,7 +173,7 @@ const Dashboard = ({ data = [], loading = false }) => {
               </h2>
             </div>
             <div className="bg-grid-deep/30 rounded-xl border border-grid-border/40 overflow-hidden min-h-85 flex-1">
-              <SantaAnaMap data={data} />
+              <SantaAnaMap data={filteredData} />
             </div>
           </div>
           <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">
@@ -225,7 +244,7 @@ const Dashboard = ({ data = [], loading = false }) => {
             className="w-full max-h-100 overflow-y-auto overflow-x-auto pr-2
               scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent"
           >
-            <TelemetryTable data={data} />
+            <TelemetryTable data={filteredData} />
           </div>
         </div>
       </div>

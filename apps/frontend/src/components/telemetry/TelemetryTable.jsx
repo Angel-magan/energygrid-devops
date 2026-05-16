@@ -1,7 +1,9 @@
-const TelemetryTable = ({ data }) => {
+import { sanitizeForDisplay } from "../../utils/sanitizers";
+
+const TelemetryTable = ({ data = [] }) => {
   return (
     <div className="w-full overflow-x-auto rounded-xl">
-      <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-[600px]">
+      <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-150">
         <thead>
           <tr className="text-xs font-bold uppercase tracking-widest text-grid-dim select-none">
             <th className="px-5 pb-1">Distrito</th>
@@ -20,10 +22,10 @@ const TelemetryTable = ({ data }) => {
                 className="group bg-grid-deep/40 hover:bg-grid-blue/10 border border-grid-border transition-colors duration-200"
               >
                 <td className="p-4 text-sm font-semibold text-grid-text rounded-l-xl border-y border-l border-grid-border/40 group-hover:border-grid-blue/30">
-                  {item.district_id}
+                  {sanitizeForDisplay(item.district_id)}
                 </td>
                 <td className="p-4 text-sm text-grid-dim font-medium border-y border-grid-border/40 group-hover:border-grid-blue/30">
-                  {item.substation_id}
+                  {sanitizeForDisplay(item.substation_id)}
                 </td>
                 <td className="p-4 text-sm border-y border-grid-border/40 group-hover:border-grid-blue/30">
                   <span
