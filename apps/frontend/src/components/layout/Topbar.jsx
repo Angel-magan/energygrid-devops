@@ -1,6 +1,6 @@
-import { Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 
-const Topbar = ({ onToggleSidebar, isSidebarOpen }) => {
+const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout }) => {
   return (
     <header className="h-[70px] bg-grid-panel border-b border-grid-border flex items-center justify-between px-6 select-none">
       <div className="flex items-center gap-4">
@@ -8,7 +8,7 @@ const Topbar = ({ onToggleSidebar, isSidebarOpen }) => {
           type="button"
           className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-text hover:text-grid-cyan hover:border-grid-cyan/40 transition-all cursor-pointer active:scale-95"
           onClick={onToggleSidebar}
-          aria-label={isSidebarOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-label={isSidebarOpen ? "Cerrar menu" : "Abrir menu"}
         >
           <Menu size={18} />
         </button>
@@ -17,8 +17,19 @@ const Topbar = ({ onToggleSidebar, isSidebarOpen }) => {
           SISTEMA EN VIVO
         </div>
       </div>
-      <div className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-grid-dim border-l border-grid-border/60 pl-4 hidden sm:block">
-        Centro de Control Eléctrico
+      <div className="flex items-center gap-3">
+        <div className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-grid-dim border-l border-grid-border/60 pl-4 hidden sm:block">
+          Centro de Control Electrico
+        </div>
+        <button
+          type="button"
+          onClick={onLogout}
+          className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-dim hover:text-grid-danger hover:border-grid-danger/40 transition-all cursor-pointer active:scale-95"
+          aria-label="Cerrar sesion"
+          title="Cerrar sesion"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </header>
   );
