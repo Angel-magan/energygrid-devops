@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { fetchTelemetry } from "../services/api";
+import { useEffect, useState } from "react";
+import { fetchSystemStatus } from "../services/api";
 
-export const useTelemetry = (refreshInterval = 5000) => {
-  const [data, setData] = useState([]);
+export const useSystemStatus = (refreshInterval = 5000) => {
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadData = async () => {
+  const load = async () => {
     try {
-      const telemetry = await fetchTelemetry();
-      setData(telemetry);
+      const result = await fetchSystemStatus();
+      setData(result);
       setError(null);
     } catch (err) {
       const message =
@@ -24,8 +24,8 @@ export const useTelemetry = (refreshInterval = 5000) => {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData(); // Carga inicial
-    const interval = setInterval(loadData, refreshInterval);
+    load();
+    const interval = setInterval(load, refreshInterval);
     return () => clearInterval(interval);
   }, [refreshInterval]);
 
