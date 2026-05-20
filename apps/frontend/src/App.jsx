@@ -12,8 +12,8 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
 
 const DashboardRoute = () => {
-  const { data } = useTelemetry(5000);
-  return <DashboardPage data={data} />;
+  const { data, loading } = useTelemetry(5000);
+  return <DashboardPage data={data} loading={loading} />;
 };
 
 function App() {

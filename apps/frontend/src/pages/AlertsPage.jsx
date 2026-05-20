@@ -11,6 +11,7 @@ import {
 
 import MainLayout from "../components/layout/MainLayout";
 import { useTelemetry } from "../hooks/useTelemetry";
+import { sanitizeForDisplay, isSuspiciousString } from "../utils/sanitizers";
 
 const CAPACITY_MAX_KW = 5000;
 
@@ -67,6 +68,14 @@ const AlertsPage = () => {
 
     const latestByDistrict = new Map();
     for (const row of data) {
+      // Ignorar filas con district/substation sospechosas — no deben generar
+      // alertas ni recomendaciones automáticas.
+      if (
+        isSuspiciousString(row?.district_id) ||
+        isSuspiciousString(row?.substation_id)
+      ) {
+        continue;
+      }
       const district = row?.district_id || "(Sin distrito)";
       const ts = row?.timestamp ? Date.parse(row.timestamp) : 0;
       const prev = latestByDistrict.get(district);
@@ -81,9 +90,9 @@ const AlertsPage = () => {
       const severity = getSeverity(usagePct);
 
       return {
-        key: `${row?.district_id ?? "district"}-${row?.substation_id ?? "sub"}`,
-        district: row?.district_id ?? "(Sin distrito)",
-        substation: row?.substation_id ?? "—",
+        key: `${sanitizeForDisplay(row?.district_id ?? "district")}-${sanitizeForDisplay(row?.substation_id ?? "sub")}`,
+        district: sanitizeForDisplay(row?.district_id ?? "(Sin distrito)"),
+        substation: sanitizeForDisplay(row?.substation_id ?? "—"),
         consumptionKw,
         capacityMaxKw,
         usagePct,
@@ -160,7 +169,7 @@ const AlertsPage = () => {
       return {
         key: `${a.district}-${target.district}`,
         title: `Redistribuir ~${transferKw} kW`,
-        detail: `${a.district} → ${target.district}`,
+        detail: `${sanitizeForDisplay(a.district)} → ${sanitizeForDisplay(target.district)}`,
         reason,
       };
     });
@@ -301,7 +310,7 @@ const AlertsPage = () => {
             </h2>
           </div>
           <div
-            className="grid grid-cols-1 gap-4 sm:hidden max-h-[400px] overflow-y-auto pr-1
+            className="grid grid-cols-1 gap-4 sm:hidden max-h-100 overflow-y-auto pr-1
     scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent"
           >
             {districtAlerts.map((a) => {
@@ -378,7 +387,7 @@ const AlertsPage = () => {
             )}
           </div>
           <div
-            className="hidden sm:block w-full max-h-[450px] overflow-y-auto overflow-x-auto pr-2
+            className="hidden sm:block w-full max-h-112.5 overflow-y-auto overflow-x-auto pr-2
     scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
           >
             <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-225">
