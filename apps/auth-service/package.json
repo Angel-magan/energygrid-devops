@@ -1,19 +1,21 @@
 {
-  "name": "energygrid-backend",
+  "name": "energygrid-auth-service",
   "version": "1.0.0",
-  "description": "API Core para gestión eléctrica",
+  "description": "Microservicio de autenticacion y autorizacion para EnergyGrid",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
     "express-rate-limit": "^8.5.1",
     "express-validator": "^7.3.2",
     "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.20.0"
   },
   "devDependencies": {

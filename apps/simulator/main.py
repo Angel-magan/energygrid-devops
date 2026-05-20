@@ -5,13 +5,28 @@ from datetime import datetime
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://eg-backend:3000")
-DISTRICTS = ["Centro", "Norte", "Sur", "Occidente"]
+DISTRICTS = [
+    "Santa Ana",
+    "Coatepeque",
+    "El Congo",
+    "Masahuat",
+    "Metapán",
+    "Santa Rosa Guachipilín",
+    "Texistepeque",
+    "Candelaria de la Frontera",
+    "Chalchuapa",
+    "El Porvenir",
+    "San Antonio Pajonal",
+    "San Sebastián Salitrillo",
+    "Santiago de la Frontera"
+]
 
 def generate_data():
     return {
         "district_id": random.choice(DISTRICTS),
         "substation_id": f"SUB-{random.randint(1, 10):02d}",
         "consumption_kw": round(random.uniform(100.0, 5000.0), 2),
+        # "consumption_kw": round(random.uniform(4600.0, 5000.0), 2),
         "timestamp": datetime.now().isoformat()
     }
 
