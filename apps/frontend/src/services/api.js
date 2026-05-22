@@ -27,6 +27,11 @@ export const fetchTelemetry = async () => {
   return response.data;
 };
 
+export const fetchTelemetryAll = async () => {
+  const response = await axios.get(`${API_URL}/telemetry/all`);
+  return response.data;
+};
+
 export const fetchSystemStatus = async () => {
   const response = await axios.get(`${API_URL}/system/status`);
   return response.data;

@@ -129,7 +129,7 @@ const formatRelativeFromNow = (ms) => {
 };
 
 const TelemetryPage = ({ data: dataProp } = {}) => {
-  const { data: hookData, loading, error } = useTelemetry(5000);
+  const { data: hookData, loading, error } = useTelemetry(5000, { all: true });
   const data = Array.isArray(dataProp) ? dataProp : hookData;
 
   const [districtQuery, setDistrictQuery] = useState("");
