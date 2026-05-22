@@ -4,6 +4,7 @@ import { useState } from "react";
 
 const MainLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const isAuthenticated = Boolean(localStorage.getItem("eg_auth_token"));
 
   const handleToggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const handleCloseSidebar = () => setIsSidebarOpen(false);
@@ -21,6 +22,7 @@ const MainLayout = ({ children }) => {
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
           onLogout={handleLogout}
+          isAuthenticated={isAuthenticated}
         />
         <div className="p-4 sm:p-6 md:p-8 max-w-[1600px] w-full mx-auto flex-1">
           {children}

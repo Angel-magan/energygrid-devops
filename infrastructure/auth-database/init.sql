@@ -44,3 +44,18 @@ FROM users u
 JOIN roles r ON r.name = 'admin'
 WHERE u.email = 'admin@energygrid.local'
 ON CONFLICT DO NOTHING;
+
+INSERT INTO users (email, name, password_hash)
+VALUES (
+    'user@energygrid.local',
+    'EnergyGrid User',
+    crypt('User123!', gen_salt('bf', 10))
+)
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'user'
+WHERE u.email = 'user@energygrid.local'
+ON CONFLICT DO NOTHING;
