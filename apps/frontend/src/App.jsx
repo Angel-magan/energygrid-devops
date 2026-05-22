@@ -43,6 +43,7 @@ function App() {
   }, [auth?.token]);
 
   const isAuthenticated = Boolean(auth?.token);
+  const userRoles = auth?.user?.roles || [];
 
   return (
     <BrowserRouter>
@@ -59,16 +60,12 @@ function App() {
         />
         <Route
           path="/"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <DashboardRoute />
-            </ProtectedRoute>
-          }
+          element={<DashboardRoute />}
         />
         <Route
           path="/alerts"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
               <AlertsPage />
             </ProtectedRoute>
           }
@@ -76,7 +73,7 @@ function App() {
         <Route
           path="/telemetry"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
               <TelemetryPage />
             </ProtectedRoute>
           }
@@ -84,7 +81,7 @@ function App() {
         <Route
           path="/system"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
               <SystemStatusPage />
             </ProtectedRoute>
           }
