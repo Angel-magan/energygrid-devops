@@ -25,7 +25,7 @@ function App() {
 
     try {
       return { token, user: JSON.parse(storedUser) };
-    } catch (err) {
+    } catch {
       localStorage.removeItem("eg_auth_token");
       localStorage.removeItem("eg_auth_user");
       return null;
@@ -57,14 +57,7 @@ function App() {
             )
           }
         />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <DashboardRoute />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={<DashboardRoute />} />
         <Route
           path="/alerts"
           element={
@@ -89,6 +82,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

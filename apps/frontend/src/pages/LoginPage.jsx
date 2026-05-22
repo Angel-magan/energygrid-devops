@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Lock, LogIn, Mail, ShieldCheck, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Lock, LogIn, Mail, ShieldCheck, Zap } from "lucide-react";
 import { login } from "../services/api";
 
 const LoginPage = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("admin@energygrid.local");
   const [password, setPassword] = useState("Admin123!");
   const [error, setError] = useState("");
@@ -28,6 +30,11 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
+  const handleGuestAccess = () => {
+    setError("");
+    navigate("/");
+  };
+
   return (
     <main className="min-h-screen bg-grid-deep text-grid-text flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 items-center">
@@ -37,7 +44,7 @@ const LoginPage = ({ onLogin }) => {
             ENERGYGRID
           </div>
           <h1 className="text-4xl font-black tracking-tight leading-tight max-w-xl">
-            Centro de Control Electrico Santa Ana
+            Centro de Control Eléctrico El Salvador
           </h1>
           <p className="text-grid-dim mt-4 max-w-lg leading-7">
             Acceso protegido con JWT, roles y base de datos separada para
@@ -109,14 +116,25 @@ const LoginPage = ({ onLogin }) => {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg bg-grid-cyan text-grid-deep font-black hover:bg-sky-300 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-            >
-              <LogIn size={18} />
-              {loading ? "Validando..." : "Entrar"}
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg bg-grid-cyan text-grid-deep font-black hover:bg-sky-300 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                <LogIn size={18} />
+                {loading ? "Validando..." : "Entrar"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleGuestAccess}
+                className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-lg border border-grid-border bg-grid-deep/60 text-grid-text font-bold hover:bg-grid-blue/10 hover:border-grid-cyan/40 transition-colors"
+              >
+                <ArrowRight size={18} className="text-grid-cyan" />
+                Invitado
+              </button>
+            </div>
           </form>
         </section>
       </div>

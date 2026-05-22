@@ -650,7 +650,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4">
+            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4 flex h-full min-h-55 flex-col">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-bold text-grid-text">
                   Timestamps inválidos
@@ -662,8 +662,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Registros con formato de fecha no parseable.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.invalidTimestamps.slice(0, 5).map((r) => (
+              <div className="mt-3 max-h-28 flex-1 space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent">
+                {anomalies.invalidTimestamps.map((r) => (
                   <div
                     key={`ts-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -675,7 +675,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               </div>
             </div>
 
-            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4">
+            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4 flex h-full min-h-55 flex-col">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-bold text-grid-text">
                   Valores fuera de rango
@@ -687,8 +687,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Consumo/voltaje/frecuencia con valores inesperados.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.outOfRange.slice(0, 5).map((r) => (
+              <div className="mt-3 max-h-28 flex-1 space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent">
+                {anomalies.outOfRange.map((r) => (
                   <div
                     key={`rng-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -703,7 +703,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               </div>
             </div>
 
-            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4">
+            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4 flex h-full min-h-55 flex-col">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-bold text-grid-text">
                   Posibles SQL injections
@@ -715,8 +715,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Cadenas sospechosas en distrito/subestación.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.sqlInjections.slice(0, 5).map((r) => (
+              <div className="mt-3 max-h-28 flex-1 space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent">
+                {anomalies.sqlInjections.map((r) => (
                   <div
                     key={`sql-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -728,7 +728,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               </div>
             </div>
 
-            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4">
+            <div className="bg-grid-deep/40 border border-grid-border/40 rounded-2xl p-4 flex h-full min-h-55 flex-col">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-bold text-grid-text">
                   Datos corruptos
@@ -740,8 +740,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Campos requeridos ausentes o tipos inválidos.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.corrupt.slice(0, 5).map((r) => (
+              <div className="mt-3 max-h-28 flex-1 space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent">
+                {anomalies.corrupt.map((r) => (
                   <div
                     key={`cor-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
