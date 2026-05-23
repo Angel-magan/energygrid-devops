@@ -662,8 +662,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Registros con formato de fecha no parseable.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.invalidTimestamps.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.invalidTimestamps.map((r) => (
                   <div
                     key={`ts-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -687,8 +687,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Consumo/voltaje/frecuencia con valores inesperados.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.outOfRange.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.outOfRange.map((r) => (
                   <div
                     key={`rng-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -715,8 +715,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Cadenas sospechosas en distrito/subestación.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.sqlInjections.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.sqlInjections.map((r) => (
                   <div
                     key={`sql-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -740,8 +740,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Campos requeridos ausentes o tipos inválidos.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.corrupt.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.corrupt.map((r) => (
                   <div
                     key={`cor-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
