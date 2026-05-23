@@ -6,15 +6,19 @@ import { useTelemetry } from "./hooks/useTelemetry";
 import DashboardPage from "./pages/DashboardPage";
 import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
+import DevOpsLogsPage from "./pages/DevOpsLogsPage"; // nuevo
 import SystemStatusPage from "./pages/SystemStatusPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
 
+
 const DashboardRoute = () => {
   const { data, loading } = useTelemetry(5000);
   return <DashboardPage data={data} loading={loading} />;
 };
+
+// ... Tus imports de arriba se quedan exactamente igual ...
 
 function App() {
   const [auth, setAuth] = useState(() => {
@@ -57,11 +61,12 @@ function App() {
             )
           }
         />
+        {/* Apuntamos directo a DashboardPage, ella se encargará de consumir su telemetría */}
         <Route
           path="/"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <DashboardRoute />
+              <DashboardPage />
             </ProtectedRoute>
           }
         />
@@ -89,6 +94,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+      <Route
+          path="/devops-logs"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <DevOpsLogsPage />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fetchTelemetry } from "../services/api";
 
 export const useTelemetry = (refreshInterval = 5000) => {
@@ -6,7 +6,9 @@ export const useTelemetry = (refreshInterval = 5000) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadData = async () => {
+  const loadDataRef = useRef();
+
+  loadDataRef.current = async () => {
     try {
       const telemetry = await fetchTelemetry();
       setData(telemetry);
@@ -23,10 +25,18 @@ export const useTelemetry = (refreshInterval = 5000) => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData(); // Carga inicial
-    const interval = setInterval(loadData, refreshInterval);
-    return () => clearInterval(interval);
+    // 1. Carga inicial inmediata
+    loadDataRef.current();
+
+    // 2. Iniciamos el temporizador seguro
+    const interval = setInterval(() => {
+      loadDataRef.current();
+    }, refreshInterval);
+
+    // ✨ LA SOLUCIÓN: Limpiamos el intervalo al desmontar el componente
+    return () => {
+      clearInterval(interval);
+    };
   }, [refreshInterval]);
 
   return { data, loading, error };
