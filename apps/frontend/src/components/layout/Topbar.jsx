@@ -1,6 +1,7 @@
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout }) => {
+const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout, isAuthenticated }) => {
   return (
     <header className="h-[70px] bg-grid-panel border-b border-grid-border flex items-center justify-between px-6 select-none">
       <div className="flex items-center gap-4">
@@ -21,15 +22,25 @@ const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout }) => {
         <div className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-grid-dim border-l border-grid-border/60 pl-4 hidden sm:block">
           Centro de Control Electrico
         </div>
-        <button
-          type="button"
-          onClick={onLogout}
-          className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-dim hover:text-grid-danger hover:border-grid-danger/40 transition-all cursor-pointer active:scale-95"
-          aria-label="Cerrar sesion"
-          title="Cerrar sesion"
-        >
-          <LogOut size={18} />
-        </button>
+        {isAuthenticated ? (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-dim hover:text-grid-danger hover:border-grid-danger/40 transition-all cursor-pointer active:scale-95"
+            aria-label="Cerrar sesion"
+            title="Cerrar sesion"
+          >
+            <LogOut size={18} />
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-grid-blue/50 bg-grid-blue/10 text-grid-cyan hover:bg-grid-blue/20 transition-all font-semibold text-xs tracking-wider"
+          >
+            <LogIn size={16} />
+            <span>INICIAR SESIÓN</span>
+          </Link>
+        )}
       </div>
     </header>
   );

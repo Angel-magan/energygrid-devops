@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
-import { fetchTelemetry } from "../services/api";
+import { fetchTelemetry, fetchTelemetryAll } from "../services/api";
 
-export const useTelemetry = (refreshInterval = 5000) => {
+export const useTelemetry = (refreshInterval = 5000, options = {}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadData = async () => {
     try {
-      const telemetry = await fetchTelemetry();
+      const telemetry = await (options && options.all
+        ? fetchTelemetryAll()
+        : fetchTelemetry());
       setData(telemetry);
       setError(null);
     } catch (err) {
