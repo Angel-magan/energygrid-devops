@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Activity,
   Server,
+  Terminal,
   X,
 } from "lucide-react";
 
@@ -99,6 +100,26 @@ const Sidebar = ({ isOpen = true, onClose }) => {
               <span>Estado Sistema</span>
             </NavLink>
           </li>
+<li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <NavLink
+              to="/devops-logs"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <Terminal size={20} />
+              <span>Consola Logs</span>
+            </NavLink>
+          </li>
+
+
+
+
         </ul>
       </nav>
     </aside>
