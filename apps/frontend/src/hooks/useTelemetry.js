@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fetchTelemetry, fetchTelemetryAll } from "../services/api";
 
 export const useTelemetry = (refreshInterval = 5000, options = {}) => {
@@ -6,8 +6,11 @@ export const useTelemetry = (refreshInterval = 5000, options = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadData = async () => {
+  const loadDataRef = useRef();
+
+  loadDataRef.current = async () => {
     try {
+      // Mantiene la lógica de tus compañeros para decidir qué API llamar
       const telemetry = await (options && options.all
         ? fetchTelemetryAll()
         : fetchTelemetry());
@@ -25,10 +28,18 @@ export const useTelemetry = (refreshInterval = 5000, options = {}) => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData(); // Carga inicial
-    const interval = setInterval(loadData, refreshInterval);
-    return () => clearInterval(interval);
+    // 1. Tu carga inicial inmediata optimizada
+    loadDataRef.current();
+
+    // 2. Tu temporizador seguro que evita peticiones dobles
+    const interval = setInterval(() => {
+      loadDataRef.current();
+    }, refreshInterval);
+
+    // ✨ Tu limpieza para que la consola no explote al cambiar de página
+    return () => {
+      clearInterval(interval);
+    };
   }, [refreshInterval]);
 
   return { data, loading, error };
