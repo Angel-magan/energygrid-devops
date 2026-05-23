@@ -24,4 +24,14 @@ const getLatestTelemetry = async (limit = 50) => {
   return result.rows;
 };
 
-module.exports = { saveTelemetry, getLatestTelemetry };
+// Obtener todos los registros de telemetría (sin límite)
+const getAllTelemetry = async () => {
+  const query = `
+    SELECT id, district_id, substation_id, consumption_kw, timestamp
+    FROM telemetry
+    ORDER BY timestamp DESC;
+  `;
+  const result = await db.query(query);
+  return result.rows;
+};
+module.exports = { saveTelemetry, getLatestTelemetry, getAllTelemetry };
