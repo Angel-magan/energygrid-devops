@@ -1,20 +1,14 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 
-import { useTelemetry } from "./hooks/useTelemetry";
-
 import DashboardPage from "./pages/DashboardPage";
 import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
+import DevOpsLogsPage from "./pages/DevOpsLogsPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
-
-const DashboardRoute = () => {
-  const { data, loading } = useTelemetry(5000);
-  return <DashboardPage data={data} loading={loading} />;
-};
 
 function App() {
   const [auth, setAuth] = useState(() => {
@@ -58,10 +52,17 @@ function App() {
             )
           }
         />
+
+        {/* ⚡ CONFLICTO SOLUCIONADO: Usamos tu DashboardPage directo y protegido */}
         <Route
           path="/"
-          element={<DashboardRoute />}
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
         />
+
         <Route
           path="/alerts"
           element={
@@ -70,6 +71,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/telemetry"
           element={
@@ -78,11 +80,23 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Aquí protegemos el estado del hardware solo para admin, tal como subió main */}
         <Route
           path="/system"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
               <SystemStatusPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Tu nueva consola DevOps de logs unificados */}
+        <Route
+          path="/devops-logs"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
+              <DevOpsLogsPage />
             </ProtectedRoute>
           }
         />

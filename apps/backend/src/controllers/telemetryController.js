@@ -19,42 +19,49 @@ const createTelemetry = async (req, res) => {
   try {
     const { district_id, consumption_kw } = req.body;
 
-    // Validación básica (puedes expandirla)
+    // Validación básica del Payload
     if (!district_id || consumption_kw < 0) {
-      console.warn(
-        `[WARNING] Invalid payload received: ${JSON.stringify(req.body)}`,
-      );
+      // Usamos appendLog en lugar de un console.warn suelto para que el frontend lo registre
+      appendLog({
+        level: "WARN",
+        service: "Backend API",
+        message: `Payload rechazado por datos inválidos: ${JSON.stringify(req.body)}`
+      });
       return res.status(400).json({ error: "Invalid data" });
     }
 
+    // Guardamos en la base de datos de telemetría operativa
     const savedData = await telemetryService.saveTelemetry(req.body);
-    console.log(`[INFO] Telemetry stored for district: ${district_id}`);
 
-    // Logs operacionales (para el panel DevOps)
+    // ❌ ELIMINADO: console.log(`[INFO] Telemetry stored...`); 
+    // Explicación: Ya no imprimimos texto por cada envío exitoso de 5s para salvar la consola.
+
+    // 1. Auditoría de Seguridad: Si detectamos patrones extraños de SQL Injection
     if (isSuspicious(district_id) || isSuspicious(req.body?.substation_id)) {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `Posible entrada sospechosa en telemetría: district='${district_id}' substation='${req.body?.substation_id}'`,
+        message: `ALERTA DE SEGURIDAD: Inyección sospechosa mitigada en distrito='${district_id}'`
       });
     }
 
+    // 2. Auditoría de Operación: Alta carga en el Sector Occidente
     const consumption = Number(consumption_kw);
     if (Number.isFinite(consumption) && consumption >= 4750) {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `Alta carga detectada: ${district_id} · ${consumption.toFixed(2)} kW`,
+        message: `⚡ SOBRECARGA CRÍTICA DETECTADA: ${district_id} operando a ${consumption.toFixed(2)} kW`
       });
     }
 
     res.status(201).json(savedData);
   } catch (error) {
-    console.error("[ERROR] Database insertion failed:", error.message);
+    // Si la base de datos se cae o falla la query, esto SÍ es un error crítico
     appendLog({
       level: "ERROR",
-      service: "Backend API",
-      message: `Fallo inserción telemetría: ${error?.message || "unknown"}`,
+      service: "Database API",
+      message: `Fallo catastrófico en inserción de telemetría: ${error.message}`
     });
     res.status(500).json({ error: "Internal Server Error" });
   }
