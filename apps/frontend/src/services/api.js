@@ -1,14 +1,15 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api";
-const AUTH_API_URL = "http://localhost:3001/api";
+// Leemos de Railway en producción, o usamos localhost en desarrollo
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const AUTH_API_URL =
+  import.meta.env.VITE_AUTH_API_URL || "http://localhost:3001/api";
 
 export const login = async ({ email, password }) => {
   const response = await axios.post(`${AUTH_API_URL}/auth/login`, {
     email,
     password,
   });
-
   return response.data;
 };
 
@@ -18,7 +19,6 @@ export const fetchCurrentUser = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   });
-
   return response.data;
 };
 
