@@ -30,13 +30,16 @@ services:
     depends_on:
       eg-db:
         condition: service_healthy
-    # CAMBIO PARA APLICAR EL ESCALAMIENTO: 
+    # CAMBIO PARA APLICAR EL ESCALAMIENTO:
     # No mapeamos el puerto 3000 hacia afuera directamente para evitar colisiones.
     # Si se accede desde afuera, Docker asignará puertos aleatorios o usaremos un balanceador.
     expose:
       - "3000"
     deploy:
       replicas: 1 # Valor por defecto, lo subiremos por comando cuando haya "caos" de energía
+    volumes:
+      - ./apps/backend:/app
+      - /app/node_modules
     environment:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@eg-db:5432/${DB_NAME}
       PORT: 3000
@@ -105,6 +108,8 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
+    depends_on:
+      - eg-gateway
     container_name: eg-frontend
     ports:
       - "5173:5173"

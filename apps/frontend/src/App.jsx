@@ -1,20 +1,14 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 
-import { useTelemetry } from "./hooks/useTelemetry";
-
 import DashboardPage from "./pages/DashboardPage";
 import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
+import DevOpsLogsPage from "./pages/DevOpsLogsPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
-
-const DashboardRoute = () => {
-  const { data, loading } = useTelemetry(5000);
-  return <DashboardPage data={data} loading={loading} />;
-};
 
 function App() {
   const [auth, setAuth] = useState(() => {
@@ -58,31 +52,61 @@ function App() {
             )
           }
         />
-        <Route
-          path="/"
-          element={<DashboardRoute />}
-        />
+
+        {/* ⚡ CONFLICTO SOLUCIONADO: Usamos tu DashboardPage directo y protegido */}
+        {/* Mostrar dashboard público en la ruta raíz para que sea la primera pantalla */}
+        <Route path="/" element={<DashboardPage />} />
+
         <Route
           path="/alerts"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
               <AlertsPage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/telemetry"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
               <TelemetryPage />
             </ProtectedRoute>
           }
         />
+
+        {/* Aquí protegemos el estado del hardware solo para admin, tal como subió main */}
         <Route
           path="/system"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
               <SystemStatusPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Tu nueva consola DevOps de logs unificados */}
+        <Route
+          path="/devops-logs"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
+              <DevOpsLogsPage />
             </ProtectedRoute>
           }
         />

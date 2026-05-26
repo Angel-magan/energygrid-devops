@@ -114,6 +114,9 @@ const isSuspiciousSql = (text) => {
   );
 };
 
+const isSqlInjectionRow = (row) =>
+  isSuspiciousSql(row?.districtId) || isSuspiciousSql(row?.substationId);
+
 const formatDateTime = (value) => {
   const ms = typeof value === "number" ? value : Date.parse(String(value));
   if (!Number.isFinite(ms)) return "Timestamp inválido";
@@ -129,7 +132,7 @@ const formatRelativeFromNow = (ms) => {
 };
 
 const TelemetryPage = ({ data: dataProp } = {}) => {
-  const { data: hookData, loading, error } = useTelemetry(5000);
+  const { data: hookData, loading, error } = useTelemetry(5000, { all: true });
   const data = Array.isArray(dataProp) ? dataProp : hookData;
 
   const [districtQuery, setDistrictQuery] = useState("");
@@ -179,6 +182,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
         voltage,
         frequencyHz,
         status,
+        sqlInjection: isSqlInjectionRow({ districtId, substationId }),
       };
     });
   }, [data]);
@@ -262,11 +266,24 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
     }
 
     const sorted = [...rows];
-    if (sortConsumption === "asc") {
-      sorted.sort((a, b) => (a.consumptionKw ?? 0) - (b.consumptionKw ?? 0));
-    } else if (sortConsumption === "desc") {
-      sorted.sort((a, b) => (b.consumptionKw ?? 0) - (a.consumptionKw ?? 0));
-    }
+    sorted.sort((a, b) => {
+      const sqlPriorityA = a.sqlInjection ? 1 : 0;
+      const sqlPriorityB = b.sqlInjection ? 1 : 0;
+
+      if (sqlPriorityA !== sqlPriorityB) {
+        return sqlPriorityB - sqlPriorityA;
+      }
+
+      if (sortConsumption === "asc") {
+        return (a.consumptionKw ?? 0) - (b.consumptionKw ?? 0);
+      }
+
+      if (sortConsumption === "desc") {
+        return (b.consumptionKw ?? 0) - (a.consumptionKw ?? 0);
+      }
+
+      return 0;
+    });
 
     return sorted;
   }, [
@@ -516,7 +533,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
             </div>
           </div>
           <div
-            className="w-full max-h-[500px] overflow-y-auto overflow-x-auto pr-2
+            className="w-full max-h-125 overflow-y-auto overflow-x-auto pr-2
     scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
           >
             <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-225">
@@ -645,8 +662,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Registros con formato de fecha no parseable.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.invalidTimestamps.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.invalidTimestamps.map((r) => (
                   <div
                     key={`ts-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -670,8 +687,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Consumo/voltaje/frecuencia con valores inesperados.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.outOfRange.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.outOfRange.map((r) => (
                   <div
                     key={`rng-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -698,8 +715,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Cadenas sospechosas en distrito/subestación.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.sqlInjections.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.sqlInjections.map((r) => (
                   <div
                     key={`sql-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -723,8 +740,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Campos requeridos ausentes o tipos inválidos.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.corrupt.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.corrupt.map((r) => (
                   <div
                     key={`cor-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"

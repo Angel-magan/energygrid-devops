@@ -19,8 +19,15 @@ import MainLayout from "../components/layout/MainLayout";
 import TelemetryTable from "../components/telemetry/TelemetryTable";
 import SantaAnaMap from "../components/map/SantaAnaMap";
 import { isSuspiciousString } from "../utils/sanitizers";
+import { useTelemetry } from "../hooks/useTelemetry"; // 👈 Asegúrate de que la ruta apunte a tus hooks
 
-const Dashboard = ({ data = [], loading = false }) => {
+const Dashboard = () => {
+  // ⚡ El Dashboard ahora se conecta al hook optimizado de 5 segundos de forma autónoma
+  const { data: telemetryData, loading } = useTelemetry(5000);
+
+  // Re-mapeamos la variable interna de datos de forma segura
+  const data = telemetryData || [];
+
   // Filtrar filas sospechosas para el dashboard (mapa/recomendaciones/tabla)
   const filteredData = useMemo(() => {
     if (!Array.isArray(data)) return [];
@@ -80,7 +87,7 @@ const Dashboard = ({ data = [], loading = false }) => {
                   Cargando telemetría
                 </p>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-grid-text">
-                  EnergyGrid Santa Ana
+                  EnergyGrid SV
                 </h1>
                 <p className="text-sm text-grid-dim max-w-md mx-auto">
                   Estamos consultando los datos en tiempo real para preparar el
@@ -114,7 +121,7 @@ const Dashboard = ({ data = [], loading = false }) => {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-grid-text">
             EnergyGrid{" "}
             <span className="text-grid-cyan drop-shadow-[0_0_15px_rgba(47,177,255,0.4)]">
-              Santa Ana
+              SV
             </span>
           </h1>
           <div className="bg-grid-blue/10 px-4 py-2 rounded-lg border border-grid-blue flex items-center gap-2.5 text-xs font-bold text-grid-cyan tracking-wider">
