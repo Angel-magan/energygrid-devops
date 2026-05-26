@@ -3,6 +3,10 @@ const { appendLog } = require("../services/logService");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
 pool.on("connect", () => {
@@ -19,20 +23,20 @@ module.exports = {
    */
   query: async (text, params) => {
     const start = process.hrtime.bigint();
-    
+
     try {
       const result = await pool.query(text, params);
-      
+
       const end = process.hrtime.bigint();
       const durationMs = Number(end - start) / 1e6;
 
       if (durationMs >= SLOW_QUERY_THRESHOLD_MS) {
         const cleanSql = text.replace(/\s+/g, " ").trim();
-        
+
         appendLog({
           level: "WARN",
           service: "Database (Slow Query Log)",
-          message: `🐢 Consulta lenta detectada (${durationMs.toFixed(1)} ms) -> SQL: "${cleanSql}"`
+          message: `🐢 Consulta lenta detectada (${durationMs.toFixed(1)} ms) -> SQL: "${cleanSql}"`,
         });
       }
 
@@ -44,9 +48,9 @@ module.exports = {
       appendLog({
         level: "ERROR",
         service: "Database Core",
-        message: `💥 Fallo en consulta SQL después de ${durationMs.toFixed(1)} ms. Error: ${error.message}`
+        message: `💥 Fallo en consulta SQL después de ${durationMs.toFixed(1)} ms. Error: ${error.message}`,
       });
-      
+
       throw error;
     }
   },
