@@ -54,19 +54,17 @@ function App() {
         />
 
         {/* ⚡ CONFLICTO SOLUCIONADO: Usamos tu DashboardPage directo y protegido */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Mostrar dashboard público en la ruta raíz para que sea la primera pantalla */}
+        <Route path="/" element={<DashboardPage />} />
 
         <Route
           path="/alerts"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
               <AlertsPage />
             </ProtectedRoute>
           }
@@ -75,7 +73,11 @@ function App() {
         <Route
           path="/telemetry"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
               <TelemetryPage />
             </ProtectedRoute>
           }
@@ -85,7 +87,11 @@ function App() {
         <Route
           path="/system"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
               <SystemStatusPage />
             </ProtectedRoute>
           }
@@ -95,7 +101,11 @@ function App() {
         <Route
           path="/devops-logs"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
               <DevOpsLogsPage />
             </ProtectedRoute>
           }
