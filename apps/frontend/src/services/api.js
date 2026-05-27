@@ -48,3 +48,47 @@ export const updateDistrictCapacity = async (districtId, capacityMaxKw) => {
   });
   return response.data;
 };
+
+const getAuthHeaders = (token) => ({
+  Authorization: `Bearer ${token}`,
+});
+
+export const fetchAdminUsers = async (token) => {
+  const response = await axios.get(`${AUTH_API_URL}/auth/admin/users`, {
+    headers: getAuthHeaders(token),
+  });
+  return response.data;
+};
+
+export const createAdminUser = async (token, payload) => {
+  const response = await axios.post(
+    `${AUTH_API_URL}/auth/admin/users`,
+    payload,
+    {
+      headers: getAuthHeaders(token),
+    },
+  );
+  return response.data;
+};
+
+export const updateAdminUser = async (token, userId, payload) => {
+  const response = await axios.put(
+    `${AUTH_API_URL}/auth/admin/users/${userId}`,
+    payload,
+    {
+      headers: getAuthHeaders(token),
+    },
+  );
+  return response.data;
+};
+
+export const updateAdminUserStatus = async (token, userId, is_active) => {
+  const response = await axios.patch(
+    `${AUTH_API_URL}/auth/admin/users/${userId}/status`,
+    { is_active },
+    {
+      headers: getAuthHeaders(token),
+    },
+  );
+  return response.data;
+};
