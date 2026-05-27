@@ -4,10 +4,17 @@ import {
   AlertTriangle,
   Activity,
   Server,
+  Terminal,
+  Building2,
   X,
 } from "lucide-react";
 
-const Sidebar = ({ isOpen = true, onClose }) => {
+const Sidebar = ({
+  isOpen = true,
+  onClose,
+  isAuthenticated = false,
+  isAdmin = false,
+}) => {
   return (
     <aside
       className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col min-w-0 w-[260px] bg-grid-panel border-r border-grid-border p-5 text-grid-text transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto md:static md:translate-x-0
@@ -49,56 +56,99 @@ const Sidebar = ({ isOpen = true, onClose }) => {
               <span>Dashboard</span>
             </NavLink>
           </li>
-          <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            <NavLink
-              to="/alerts"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+          {isAdmin && (
+            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+              <NavLink
+                to="/districts"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
                 ${
                   isActive
                     ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
                     : "text-gray-300 hover:bg-white/5 hover:text-white"
                 }`
-              }
-            >
-              <AlertTriangle size={20} />
-              <span>Alertas</span>
-            </NavLink>
-          </li>
+                }
+              >
+                <Building2 size={20} />
+                <span>Distritos</span>
+              </NavLink>
+            </li>
+          )}
 
-          <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            <NavLink
-              to="/telemetry"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+          {isAdmin && (
+            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+              <NavLink
+                to="/alerts"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
                 ${
                   isActive
                     ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
                     : "text-gray-300 hover:bg-white/5 hover:text-white"
                 }`
-              }
-            >
-              <Activity size={20} />
-              <span>Telemetría</span>
-            </NavLink>
-          </li>
+                }
+              >
+                <AlertTriangle size={20} />
+                <span>Alertas</span>
+              </NavLink>
+            </li>
+          )}
 
-          <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
-            <NavLink
-              to="/system"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+          {isAdmin && (
+            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+              <NavLink
+                to="/telemetry"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
                 ${
                   isActive
                     ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
                     : "text-gray-300 hover:bg-white/5 hover:text-white"
                 }`
-              }
-            >
-              <Server size={20} />
-              <span>Estado Sistema</span>
-            </NavLink>
-          </li>
+                }
+              >
+                <Activity size={20} />
+                <span>Telemetría</span>
+              </NavLink>
+            </li>
+          )}
+
+          {isAdmin && (
+            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+              <NavLink
+                to="/system"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+                }
+              >
+                <Server size={20} />
+                <span>Estado Sistema</span>
+              </NavLink>
+            </li>
+          )}
+          {isAdmin && (
+            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+              <NavLink
+                to="/devops-logs"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
+                ${
+                  isActive
+                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
+                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                }`
+                }
+              >
+                <Terminal size={20} />
+                <span>Consola Logs</span>
+              </NavLink>
+            </li>
+          )}
         </ul>
       </nav>
     </aside>

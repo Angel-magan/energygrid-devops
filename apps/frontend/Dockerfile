@@ -1,15 +1,28 @@
-FROM node:20-alpine
+# Stage 1: Compilación
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiamos solo los archivos de dependencias primero (Optimización de capas)
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Copiamos el resto del proyecto
 COPY . .
 
-EXPOSE 5173
+# Railway inyectará estas variables en tiempo de build automáticamente
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 
-# Comando para iniciar el servidor de desarrollo de Vite
-CMD ["npm", "run", "dev", "--", "--host"]
+ARG VITE_AUTH_API_URL
+ENV VITE_AUTH_API_URL=$VITE_AUTH_API_URL
+
+RUN npm run build
+
+# Stage 2: Servidor de producción ultraliviano
+FROM nginx:alpine
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
