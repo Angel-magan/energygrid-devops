@@ -11,12 +11,22 @@ import {
   SortDesc,
   Zap,
   Bug,
+  RotateCcw,
 } from "lucide-react";
 
 import MainLayout from "../components/layout/MainLayout";
 import { useTelemetry } from "../hooks/useTelemetry";
-
-const CAPACITY_MAX_KW = 5000;
+import { useDistricts } from "../hooks/useDistricts";
+import {
+  buildDistrictCapacityMap,
+  getDistrictCapacityMaxKw,
+  getUsagePct as getUsagePctByCapacity,
+  DEFAULT_DISTRICT_CAPACITY_KW,
+} from "../utils/districtCapacity";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import AutomatedInsights from "../components/telemetry/AutomatedInsights"; 
+import { FileDown } from "lucide-react"; 
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -114,6 +124,9 @@ const isSuspiciousSql = (text) => {
   );
 };
 
+const isSqlInjectionRow = (row) =>
+  isSuspiciousSql(row?.districtId) || isSuspiciousSql(row?.substationId);
+
 const formatDateTime = (value) => {
   const ms = typeof value === "number" ? value : Date.parse(String(value));
   if (!Number.isFinite(ms)) return "Timestamp inválido";
@@ -129,7 +142,8 @@ const formatRelativeFromNow = (ms) => {
 };
 
 const TelemetryPage = ({ data: dataProp } = {}) => {
-  const { data: hookData, loading, error } = useTelemetry(5000);
+  const { data: hookData, loading, error } = useTelemetry(5000, { all: true });
+  const { data: districts } = useDistricts();
   const data = Array.isArray(dataProp) ? dataProp : hookData;
 
   const [districtQuery, setDistrictQuery] = useState("");
@@ -137,6 +151,19 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
   const [sortConsumption, setSortConsumption] = useState("desc");
   const [fromTs, setFromTs] = useState("");
   const [toTs, setToTs] = useState("");
+
+  const handleClearFilters = () => {
+    setDistrictQuery("");
+    setSeverityFilter("ALL");
+    setSortConsumption("desc");
+    setFromTs("");
+    setToTs("");
+  };
+
+  const districtCapacities = useMemo(
+    () => buildDistrictCapacityMap(districts),
+    [districts],
+  );
 
   const enrichedRows = useMemo(() => {
     if (!Array.isArray(data)) return [];
@@ -148,7 +175,11 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
       const timestampMs = row?.timestamp
         ? Date.parse(String(row.timestamp))
         : NaN;
-      const usagePct = getUsagePct(consumptionKw, CAPACITY_MAX_KW);
+      const capacityKw = getDistrictCapacityMaxKw(
+        districtId,
+        districtCapacities,
+      );
+      const usagePct = getUsagePctByCapacity(consumptionKw, capacityKw);
 
       const providedVoltage = toNumber(row?.voltage);
       const providedFreq = toNumber(row?.frequency_hz);
@@ -175,13 +206,15 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
         districtId,
         substationId,
         consumptionKw,
+        capacityKw,
         usagePct,
         voltage,
         frequencyHz,
         status,
+        sqlInjection: isSqlInjectionRow({ districtId, substationId }),
       };
     });
-  }, [data]);
+  }, [data, districtCapacities]);
 
   const anomalies = useMemo(() => {
     const invalidTimestamps = [];
@@ -201,7 +234,10 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
         invalidTimestamps.push(r);
       }
 
-      const usage = getUsagePct(r.consumptionKw, CAPACITY_MAX_KW);
+      const usage = getUsagePctByCapacity(
+        r.consumptionKw,
+        r.capacityKw || DEFAULT_DISTRICT_CAPACITY_KW,
+      );
       const badConsumption =
         !Number.isFinite(r.consumptionKw) ||
         r.consumptionKw < 0 ||
@@ -262,11 +298,24 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
     }
 
     const sorted = [...rows];
-    if (sortConsumption === "asc") {
-      sorted.sort((a, b) => (a.consumptionKw ?? 0) - (b.consumptionKw ?? 0));
-    } else if (sortConsumption === "desc") {
-      sorted.sort((a, b) => (b.consumptionKw ?? 0) - (a.consumptionKw ?? 0));
-    }
+    sorted.sort((a, b) => {
+      const sqlPriorityA = a.sqlInjection ? 1 : 0;
+      const sqlPriorityB = b.sqlInjection ? 1 : 0;
+
+      if (sqlPriorityA !== sqlPriorityB) {
+        return sqlPriorityB - sqlPriorityA;
+      }
+
+      if (sortConsumption === "asc") {
+        return (a.consumptionKw ?? 0) - (b.consumptionKw ?? 0);
+      }
+
+      if (sortConsumption === "desc") {
+        return (b.consumptionKw ?? 0) - (a.consumptionKw ?? 0);
+      }
+
+      return 0;
+    });
 
     return sorted;
   }, [
@@ -303,6 +352,67 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
       eventsPerMin,
     };
   }, [enrichedRows]);
+
+  // Función Automatizada para Generación de Reporte PDF Corporativo
+  const downloadPDFReport = () => {
+    const doc = new jsPDF();
+    
+    // Configurar encabezado del PDF estilo Cyberpunk/Grid corporativo
+    doc.setFillColor(20, 24, 33); 
+    doc.rect(0, 0, 210, 40, "F");
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("ENERGYGRID - REPORTE DE CONTINGENCIA", 14, 18);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Generado: ${new Date().toLocaleString()} | Estado de Red: Virtual Real-Time`, 14, 25);
+    doc.text(`Filtros Activos: Distrito: [${districtQuery || 'Todos'}] | Severidad: [${severityFilter}]`, 14, 32);
+
+    // Resumen Ejecutivo de Anomalías de Infraestructura
+    doc.setTextColor(20, 24, 33);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("1. RESUMEN DE ANOMALÍAS DE TELEMETRÍA (AUDITORÍA DOCKER)", 14, 52);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`- Timestamps Fuera de Época o Inválidos: ${anomalies.invalidTimestamps.length}`, 19, 60);
+    doc.text(`- Registros con Valores Fuera de Rango Operativo: ${anomalies.outOfRange.length}`, 19, 66);
+    doc.text(`- Intentos de Inyección de Código (SQL/Sanitarizados): ${anomalies.sqlInjections.length}`, 19, 72);
+    doc.text(`- Registros de Red Corruptos/Incompletos: ${anomalies.corrupt.length}`, 19, 78);
+
+    // Tabla de Registros Filtrados Actuales
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("2. FLUJO EN VIVO ANALIZADO", 14, 90);
+
+    const tableColumns = ["Timestamp", "Distrito", "Subestación", "Consumo (kW)", "Voltaje (V)", "Frecuencia (Hz)", "Estado"];
+    const tableRows = filteredRows.map(r => [
+      formatDateTime(r.timestampMs),
+      r.districtId || "—",
+      r.substationId || "—",
+      Number.isFinite(r.consumptionKw) ? `${r.consumptionKw.toLocaleString()} kW` : "NaN",
+      `${r.voltage.toFixed(1)} V`,
+      `${r.frequencyHz.toFixed(2)} Hz`,
+      r.status
+    ]);
+
+    doc.autoTable({
+      startY: 95,
+      head: [tableColumns],
+      body: tableRows,
+      theme: "striped",
+      headStyles: { fillColor: [14, 165, 233], fontSize: 9 }, // Color Cyan de tu interfaz
+      styles: { fontSize: 8 },
+      margin: { top: 10 }
+    });
+
+    // Guardar archivo binario descargable
+    doc.save(`EnergyGrid-Report-${Date.now()}.pdf`);
+  };
 
   return (
     <MainLayout>
@@ -423,13 +533,37 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
             </div>
           </motion.div>
         </div>
+        <AutomatedInsights 
+          filteredRows={filteredRows} 
+          anomalies={anomalies}
+          activeFilters={{
+            isTimeFilter: Boolean(fromTs || toTs),
+            summary: `Distrito: ${districtQuery || 'Todos'} | Severidad: ${severityFilter}`
+          }}
+        />
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
-          <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
-            <Filter size={20} className="text-grid-cyan" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
-              Filtros
-            </h2>
+          <div className="flex items-center justify-between mb-6 border-b border-grid-border/50 pb-4 select-none">
+            <div className="flex items-center gap-3">
+              <Filter size={20} className="text-grid-cyan" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
+                Filtros
+              </h2>
+            </div>
+            
+            {/* Botón dinámico: solo resalta si hay algún filtro modificado */}
+            {(districtQuery || severityFilter !== "ALL" || sortConsumption !== "desc" || fromTs || toTs) && (
+              <button
+                onClick={handleClearFilters}
+                className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-grid-cyan hover:text-grid-text bg-grid-cyan/10 hover:bg-grid-cyan/20 border border-grid-cyan/20 px-3 py-1.5 rounded-lg transition-all duration-200"
+                title="Restablecer todos los parámetros de búsqueda"
+              >
+                <RotateCcw size={13} />
+                <span>Limpiar Filtros</span>
+              </button>
+            )}
           </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4"></div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <div className="lg:col-span-4">
@@ -511,13 +645,27 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                 Telemetría en vivo
               </h2>
             </div>
-            <div className="text-xs text-grid-dim font-mono-tech bg-grid-deep/40 px-2.5 py-1 rounded border border-grid-border/30">
-              Mostrando {filteredRows.length} / {enrichedRows.length}
+            
+            {/* Contenedor Flex para la Insignia de conteo y el nuevo Botón PDF */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={downloadPDFReport}
+                disabled={filteredRows.length === 0}
+                className="flex items-center gap-1.5 bg-grid-cyan/10 hover:bg-grid-cyan/20 border border-grid-cyan/30 disabled:opacity-40 disabled:cursor-not-allowed text-grid-cyan font-bold text-xs px-3 py-1.5 rounded-lg transition-all duration-200"
+                title="Exportar contingencia operativa de filtros actuales"
+              >
+                <FileDown size={14} />
+                <span>Exportar Reporte</span>
+              </button>
+              
+              <div className="text-xs text-grid-dim font-mono-tech bg-grid-deep/40 px-2.5 py-1.5 rounded-lg border border-grid-border/30">
+                Mostrando {filteredRows.length} / {enrichedRows.length}
+              </div>
             </div>
           </div>
           <div
-            className="w-full max-h-[500px] overflow-y-auto overflow-x-auto pr-2
-    scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
+            className="w-full max-h-125 overflow-y-auto overflow-x-auto pr-2
+              scrollbar-thin scrollbar-thumb-grid-border scrollbar-track-transparent rounded-xl"
           >
             <table className="w-full border-separate border-spacing-y-2.5 text-left min-w-225">
               <thead className="sticky top-0 bg-grid-panel z-10 shadow-[0_2px_0_0_rgba(48,54,61,0.5)]">
@@ -645,8 +793,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Registros con formato de fecha no parseable.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.invalidTimestamps.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.invalidTimestamps.map((r) => (
                   <div
                     key={`ts-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -670,8 +818,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Consumo/voltaje/frecuencia con valores inesperados.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.outOfRange.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.outOfRange.map((r) => (
                   <div
                     key={`rng-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -698,8 +846,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Cadenas sospechosas en distrito/subestación.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.sqlInjections.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.sqlInjections.map((r) => (
                   <div
                     key={`sql-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
@@ -723,8 +871,8 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               <p className="text-xs text-grid-dim mt-1">
                 Campos requeridos ausentes o tipos inválidos.
               </p>
-              <div className="mt-3 space-y-2">
-                {anomalies.corrupt.slice(0, 5).map((r) => (
+              <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
+                {anomalies.corrupt.map((r) => (
                   <div
                     key={`cor-${r.id}`}
                     className="text-xs text-grid-dim font-mono-tech"
