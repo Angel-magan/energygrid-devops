@@ -199,6 +199,71 @@ const Dashboard = () => {
                 Mapa de Carga - Sector Occidente
               </h2>
             </div>
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Normal"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Carga dentro de rangos normales. Sin acción requerida.
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#22c55e" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Normal (&lt;60%)</span>
+              </div>
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Moderado"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Aumento de carga. Monitorizar y preparar redistribución si
+                    continúa subiendo.
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#eab308" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Moderado (60–80%)</span>
+              </div>
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Alto"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Carga alta. Considerar balanceo y medidas de mitigación.
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#ea580c" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Alto (80–95%)</span>
+              </div>
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Crítico"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Sobrecarga crítica. Acción inmediata requerida (desconectar
+                    cargas no críticas).
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#7f1d1d" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Crítico (≥95%)</span>
+              </div>
+            </div>
+
             <div className="bg-grid-deep/30 rounded-xl border border-grid-border/40 overflow-hidden min-h-85 flex-1">
               <SantaAnaMap
                 data={filteredData}
