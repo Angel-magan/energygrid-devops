@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, PencilLine, Save, Gauge } from "lucide-react";
+import { Building2, PencilLine, Save, Gauge, Search } from "lucide-react";
 
 import MainLayout from "../components/layout/MainLayout";
 import { useDistricts } from "../hooks/useDistricts";
@@ -15,15 +15,27 @@ const DistrictsPage = () => {
     error,
     saveDistrictCapacity,
   } = useDistricts();
+  const [filterText, setFilterText] = useState("");
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const [capacityInput, setCapacityInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const sortedDistricts = useMemo(
-    () => [...(Array.isArray(districts) ? districts : [])],
-    [districts],
-  );
+  const sortedDistricts = useMemo(() => {
+    const list = [...(Array.isArray(districts) ? districts : [])];
+    if (!filterText) return list;
+    const q = String(filterText).toLowerCase().trim();
+    return list.filter((d) => {
+      return (
+        String(d.name || "")
+          .toLowerCase()
+          .includes(q) ||
+        String(d.id || "")
+          .toLowerCase()
+          .includes(q)
+      );
+    });
+  }, [districts, filterText]);
 
   const selectedDistrict = useMemo(
     () =>
@@ -130,6 +142,31 @@ const DistrictsPage = () => {
               <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
                 Distritos registrados
               </h2>
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative flex-1">
+                <input
+                  aria-label="Buscar distrito por nombre o ID"
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  placeholder="Buscar por nombre o ID"
+                  className="w-full bg-grid-deep/40 border border-grid-border/40 rounded-xl px-3 py-2 text-sm text-grid-text outline-none focus:border-grid-cyan"
+                />
+                <Search
+                  className="absolute right-3 top-2.5 text-grid-dim"
+                  size={16}
+                />
+              </div>
+              {filterText && (
+                <button
+                  type="button"
+                  onClick={() => setFilterText("")}
+                  className="text-xs text-grid-cyan font-bold px-3 py-2 rounded-lg border border-grid-cyan/30 bg-grid-deep/30"
+                >
+                  Limpiar
+                </button>
+              )}
             </div>
 
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-grid-border">
