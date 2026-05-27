@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { DEFAULT_DISTRICT_CAPACITY_KW } from "../../utils/districtCapacity";
+
 const DISTRICT_PATHS = [
   {
     id: "Metapán",
@@ -56,11 +58,11 @@ const DISTRICT_PATHS = [
   },
 ];
 
-const SantaAnaMap = ({ data = [] }) => {
+const SantaAnaMap = ({ data = [], districtCapacities = {} }) => {
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  const districtCapacities = {
+  const defaultDistrictCapacities = {
     "Santa Ana": 4800,
     Coatepeque: 4200,
     "El Congo": 3000,
@@ -75,6 +77,10 @@ const SantaAnaMap = ({ data = [] }) => {
     "San Sebastián Salitrillo": 2200,
     "Santiago de la Frontera": 2100,
   };
+  const capacityLookup = {
+    ...defaultDistrictCapacities,
+    ...districtCapacities,
+  };
 
   const handleMouseMove = (e) => {
     setMousePos({ x: e.clientX + 15, y: e.clientY + 15 });
@@ -84,10 +90,12 @@ const SantaAnaMap = ({ data = [] }) => {
     const found = data.find((d) => d.district_id === id);
     if (!found) return { consumption: 0, isOverload: false, isHighLoad: false };
     const consumption = Number(found.consumption_kw) || 0;
+    const maxCapacity = capacityLookup[id] || DEFAULT_DISTRICT_CAPACITY_KW;
     return {
       consumption,
-      isOverload: consumption > 4750,
-      isHighLoad: consumption > 4000 && consumption <= 4750,
+      isOverload: consumption >= maxCapacity * 0.95,
+      isHighLoad:
+        consumption >= maxCapacity * 0.8 && consumption < maxCapacity * 0.95,
     };
   };
 
@@ -129,7 +137,8 @@ const SantaAnaMap = ({ data = [] }) => {
       >
         {DISTRICT_PATHS.map((dist) => {
           const { consumption, isOverload } = getDistrictData(dist.id);
-          const maxCapacity = districtCapacities[dist.id] || 5000;
+          const maxCapacity =
+            capacityLookup[dist.id] || DEFAULT_DISTRICT_CAPACITY_KW;
           const usage = (consumption / maxCapacity) * 100;
 
           // Nota: Asegúrate de que tu función getDistrictColor(usage) devuelva colores
@@ -177,9 +186,12 @@ const SantaAnaMap = ({ data = [] }) => {
             initial={{ opacity: 0, scale: 0.95, y: 5 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className={`fixed z-50 pointer-events-none p-4 rounded-xl border shadow-2xl min-w-[160px]
+            className={`fixed z-50 pointer-events-none p-4 rounded-xl border shadow-2xl min-w-40
               ${
-                hoveredDistrict.consumption > 4750
+                hoveredDistrict.consumption >=
+                (capacityLookup[hoveredDistrict.id] ||
+                  DEFAULT_DISTRICT_CAPACITY_KW) *
+                  0.95
                   ? "border-grid-danger/50 bg-grid-deep/90 shadow-grid-danger/5"
                   : "border-grid-border/80 bg-grid-panel/90 shadow-black/50"
               }`}
@@ -197,7 +209,10 @@ const SantaAnaMap = ({ data = [] }) => {
             {/* Lectura de kW */}
             <div
               className={`text-xl font-bold font-mono-tech ${
-                hoveredDistrict.consumption > 4750
+                hoveredDistrict.consumption >=
+                (capacityLookup[hoveredDistrict.id] ||
+                  DEFAULT_DISTRICT_CAPACITY_KW) *
+                  0.95
                   ? "text-grid-danger drop-shadow-[0_0_8px_rgba(248,81,73,0.3)]"
                   : "text-grid-cyan drop-shadow-[0_0_8px_rgba(47,177,255,0.3)]"
               }`}
@@ -215,7 +230,8 @@ const SantaAnaMap = ({ data = [] }) => {
               <span className="font-mono-tech font-bold text-grid-text">
                 {(
                   (hoveredDistrict.consumption /
-                    (districtCapacities[hoveredDistrict.id] || 5000)) *
+                    (capacityLookup[hoveredDistrict.id] ||
+                      DEFAULT_DISTRICT_CAPACITY_KW)) *
                   100
                 ).toFixed(1)}
                 %
@@ -223,7 +239,10 @@ const SantaAnaMap = ({ data = [] }) => {
             </p>
 
             {/* Alerta de Sobrecarga Crítica */}
-            {hoveredDistrict.consumption > 4750 && (
+            {hoveredDistrict.consumption >=
+              (capacityLookup[hoveredDistrict.id] ||
+                DEFAULT_DISTRICT_CAPACITY_KW) *
+                0.95 && (
               <div className="mt-3 bg-grid-danger/10 text-grid-danger text-[10px] font-black py-1 px-2 rounded border border-grid-danger/20 text-center tracking-wider animate-pulse">
                 ⚠️ SOBRECARGA CRÍTICA
               </div>
