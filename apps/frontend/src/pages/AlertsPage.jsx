@@ -11,9 +11,13 @@ import {
 
 import MainLayout from "../components/layout/MainLayout";
 import { useTelemetry } from "../hooks/useTelemetry";
+import { useDistricts } from "../hooks/useDistricts";
 import { sanitizeForDisplay, isSuspiciousString } from "../utils/sanitizers";
-
-const CAPACITY_MAX_KW = 5000;
+import {
+  buildDistrictCapacityMap,
+  getDistrictCapacityMaxKw,
+  getUsagePct as getUsagePctByCapacity,
+} from "../utils/districtCapacity";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -62,6 +66,12 @@ const severityMeta = {
 
 const AlertsPage = () => {
   const { data, loading, error } = useTelemetry(5000);
+  const { data: districts } = useDistricts();
+
+  const districtCapacities = useMemo(
+    () => buildDistrictCapacityMap(districts),
+    [districts],
+  );
 
   const districtAlerts = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return [];
@@ -84,9 +94,13 @@ const AlertsPage = () => {
     }
 
     const alerts = Array.from(latestByDistrict.values()).map((row) => {
-      const capacityMaxKw = CAPACITY_MAX_KW;
+      const districtId = String(row?.district_id || "");
+      const capacityMaxKw = getDistrictCapacityMaxKw(
+        districtId,
+        districtCapacities,
+      );
       const consumptionKw = toNumber(row?.consumption_kw);
-      const usagePct = getUsagePct(consumptionKw, capacityMaxKw);
+      const usagePct = getUsagePctByCapacity(consumptionKw, capacityMaxKw);
       const severity = getSeverity(usagePct);
 
       return {
@@ -103,7 +117,7 @@ const AlertsPage = () => {
 
     alerts.sort((a, b) => b.usagePct - a.usagePct);
     return alerts;
-  }, [data]);
+  }, [data, districtCapacities]);
 
   const kpis = useMemo(() => {
     const totalDistricts = districtAlerts.length;
@@ -116,9 +130,12 @@ const AlertsPage = () => {
 
     const overloadEvents = Array.isArray(data)
       ? data.filter((row) => {
-          const usage = getUsagePct(
+          const usage = getUsagePctByCapacity(
             toNumber(row?.consumption_kw),
-            CAPACITY_MAX_KW,
+            getDistrictCapacityMaxKw(
+              String(row?.district_id || ""),
+              districtCapacities,
+            ),
           );
           return usage >= 95;
         }).length
@@ -144,7 +161,7 @@ const AlertsPage = () => {
       blackoutRiskPct,
       blackoutRiskLabel,
     };
-  }, [districtAlerts, data]);
+  }, [districtAlerts, data, districtCapacities]);
 
   const recommendations = useMemo(() => {
     if (districtAlerts.length === 0) return [];

@@ -15,8 +15,13 @@ import {
 
 import MainLayout from "../components/layout/MainLayout";
 import { useTelemetry } from "../hooks/useTelemetry";
-
-const CAPACITY_MAX_KW = 5000;
+import { useDistricts } from "../hooks/useDistricts";
+import {
+  buildDistrictCapacityMap,
+  getDistrictCapacityMaxKw,
+  getUsagePct as getUsagePctByCapacity,
+  DEFAULT_DISTRICT_CAPACITY_KW,
+} from "../utils/districtCapacity";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -133,6 +138,7 @@ const formatRelativeFromNow = (ms) => {
 
 const TelemetryPage = ({ data: dataProp } = {}) => {
   const { data: hookData, loading, error } = useTelemetry(5000, { all: true });
+  const { data: districts } = useDistricts();
   const data = Array.isArray(dataProp) ? dataProp : hookData;
 
   const [districtQuery, setDistrictQuery] = useState("");
@@ -140,6 +146,11 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
   const [sortConsumption, setSortConsumption] = useState("desc");
   const [fromTs, setFromTs] = useState("");
   const [toTs, setToTs] = useState("");
+
+  const districtCapacities = useMemo(
+    () => buildDistrictCapacityMap(districts),
+    [districts],
+  );
 
   const enrichedRows = useMemo(() => {
     if (!Array.isArray(data)) return [];
@@ -151,7 +162,11 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
       const timestampMs = row?.timestamp
         ? Date.parse(String(row.timestamp))
         : NaN;
-      const usagePct = getUsagePct(consumptionKw, CAPACITY_MAX_KW);
+      const capacityKw = getDistrictCapacityMaxKw(
+        districtId,
+        districtCapacities,
+      );
+      const usagePct = getUsagePctByCapacity(consumptionKw, capacityKw);
 
       const providedVoltage = toNumber(row?.voltage);
       const providedFreq = toNumber(row?.frequency_hz);
@@ -178,6 +193,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
         districtId,
         substationId,
         consumptionKw,
+        capacityKw,
         usagePct,
         voltage,
         frequencyHz,
@@ -185,7 +201,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
         sqlInjection: isSqlInjectionRow({ districtId, substationId }),
       };
     });
-  }, [data]);
+  }, [data, districtCapacities]);
 
   const anomalies = useMemo(() => {
     const invalidTimestamps = [];
@@ -205,7 +221,10 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
         invalidTimestamps.push(r);
       }
 
-      const usage = getUsagePct(r.consumptionKw, CAPACITY_MAX_KW);
+      const usage = getUsagePctByCapacity(
+        r.consumptionKw,
+        r.capacityKw || DEFAULT_DISTRICT_CAPACITY_KW,
+      );
       const badConsumption =
         !Number.isFinite(r.consumptionKw) ||
         r.consumptionKw < 0 ||

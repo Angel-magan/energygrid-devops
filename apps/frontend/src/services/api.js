@@ -36,3 +36,15 @@ export const fetchSystemStatus = async () => {
   const response = await axios.get(`${API_URL}/system/status`);
   return response.data;
 };
+
+export const fetchDistricts = async () => {
+  const response = await axios.get(`${API_URL}/districts`);
+  return response.data;
+};
+
+export const updateDistrictCapacity = async (districtId, capacityMaxKw) => {
+  const response = await axios.put(`${API_URL}/districts/${districtId}`, {
+    capacity_max_kw: capacityMaxKw,
+  });
+  return response.data;
+};
