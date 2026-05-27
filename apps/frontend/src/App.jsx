@@ -54,9 +54,6 @@ function App() {
             )
           }
         />
-
-        {/* ⚡ CONFLICTO SOLUCIONADO: Usamos tu DashboardPage directo y protegido */}
-        {/* Mostrar dashboard público en la ruta raíz para que sea la primera pantalla */}
         <Route path="/" element={<DashboardPage />} />
 
         <Route

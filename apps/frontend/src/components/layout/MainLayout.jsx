@@ -2,16 +2,20 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import { useState } from "react";
 
+const getStoredUser = () => {
+  try {
+    const stored = localStorage.getItem("eg_auth_user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
 const MainLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isAuthenticated = Boolean(localStorage.getItem("eg_auth_token"));
-  let userRoles = [];
-  try {
-    const stored = localStorage.getItem("eg_auth_user");
-    userRoles = stored ? JSON.parse(stored).roles || [] : [];
-  } catch (e) {
-    userRoles = [];
-  }
+  const currentUser = getStoredUser();
+  const userRoles = currentUser?.roles || [];
   const isAdmin = userRoles.includes("admin");
 
   const handleToggleSidebar = () => setIsSidebarOpen((prev) => !prev);
@@ -37,8 +41,9 @@ const MainLayout = ({ children }) => {
           onToggleSidebar={handleToggleSidebar}
           onLogout={handleLogout}
           isAuthenticated={isAuthenticated}
+          currentUser={currentUser}
         />
-        <div className="p-4 sm:p-6 md:p-8 max-w-[1600px] w-full mx-auto flex-1">
+        <div className="p-4 sm:p-6 md:p-8 max-w-400 w-full mx-auto flex-1">
           {children}
         </div>
       </div>
