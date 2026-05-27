@@ -20,10 +20,17 @@ import TelemetryTable from "../components/telemetry/TelemetryTable";
 import SantaAnaMap from "../components/map/SantaAnaMap";
 import { isSuspiciousString } from "../utils/sanitizers";
 import { useTelemetry } from "../hooks/useTelemetry"; // 👈 Asegúrate de que la ruta apunte a tus hooks
+import { useDistricts } from "../hooks/useDistricts";
+import {
+  buildDistrictCapacityMap,
+  getDistrictCapacityMaxKw,
+  getUsagePct,
+} from "../utils/districtCapacity";
 
 const Dashboard = () => {
   // ⚡ El Dashboard ahora se conecta al hook optimizado de 5 segundos de forma autónoma
   const { data: telemetryData, loading } = useTelemetry(5000);
+  const { data: districts } = useDistricts();
 
   // Re-mapeamos la variable interna de datos de forma segura
   const data = telemetryData || [];
@@ -38,6 +45,11 @@ const Dashboard = () => {
     );
   }, [data]);
 
+  const districtCapacities = useMemo(
+    () => buildDistrictCapacityMap(districts),
+    [districts],
+  );
+
   // --- CÁLCULOS SEGUROS (Evitan el error .toFixed) ---
   const totalConsumption = useMemo(() => {
     if (!filteredData || filteredData.length === 0) return "0.00";
@@ -50,7 +62,15 @@ const Dashboard = () => {
 
   const alertCount = useMemo(() => {
     if (!filteredData) return 0;
-    return filteredData.filter((d) => Number(d.consumption_kw) > 4750).length;
+    return filteredData.filter((d) => {
+      const districtId = String(d.district_id || "");
+      const capacityKw = getDistrictCapacityMaxKw(
+        districtId,
+        districtCapacities,
+      );
+      const usagePct = getUsagePct(d.consumption_kw, capacityKw);
+      return Number.isFinite(usagePct) && usagePct >= 95;
+    }).length;
   }, [filteredData]);
 
   const chartData = useMemo(() => {
@@ -180,7 +200,10 @@ const Dashboard = () => {
               </h2>
             </div>
             <div className="bg-grid-deep/30 rounded-xl border border-grid-border/40 overflow-hidden min-h-85 flex-1">
-              <SantaAnaMap data={filteredData} />
+              <SantaAnaMap
+                data={filteredData}
+                districtCapacities={districtCapacities}
+              />
             </div>
           </div>
           <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">

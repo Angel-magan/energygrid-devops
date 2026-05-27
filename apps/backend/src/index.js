@@ -4,6 +4,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const telemetryRoutes = require("./routes/telemetryRoutes");
 const systemRoutes = require("./routes/systemRoutes");
+const districtRoutes = require("./routes/districtRoutes");
 const { errorHandler } = require("./middleware/errorHandler");
 const { appendLog } = require("./services/logService");
 
@@ -59,6 +60,7 @@ app.use(express.json({ limit: "10kb" })); // Evita ataques de denegación de ser
 // Rutas
 app.use("/api", telemetryRoutes);
 app.use("/api", systemRoutes);
+app.use("/api", districtRoutes);
 
 // 4. Manejo Centralizado de Errores (Middleware final)
 app.use(errorHandler);

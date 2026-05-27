@@ -108,6 +108,7 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
+      target: builder
     depends_on:
       - eg-gateway
     container_name: eg-frontend

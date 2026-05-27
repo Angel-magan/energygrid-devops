@@ -6,6 +6,7 @@ import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
 import DevOpsLogsPage from "./pages/DevOpsLogsPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
+import DistrictsPage from "./pages/DistrictsPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
@@ -66,6 +67,19 @@ function App() {
               allowedRoles={["admin", "user"]}
             >
               <AlertsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/districts"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
+              <DistrictsPage />
             </ProtectedRoute>
           }
         />
