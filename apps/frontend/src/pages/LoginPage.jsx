@@ -5,8 +5,8 @@ import { login } from "../services/api";
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@energygrid.local");
-  const [password, setPassword] = useState("Admin123!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +43,7 @@ const LoginPage = ({ onLogin }) => {
             ENERGYGRID
           </div>
           <h1 className="text-4xl font-black tracking-tight leading-tight max-w-xl">
-            Centro de Control Eléctrico Santa Ana, El Salvador
+            Centro de Control Eléctrico, El Salvador
           </h1>
           <p className="text-grid-dim mt-4 max-w-lg leading-7">
             Acceso protegido con JWT, roles y base de datos separada para
@@ -87,6 +87,7 @@ const LoginPage = ({ onLogin }) => {
                   onChange={(event) => setEmail(event.target.value)}
                   className="w-full bg-transparent outline-none text-sm text-grid-text"
                   autoComplete="email"
+                  placeholder="usuario@energygrid.com"
                   required
                 />
               </div>
@@ -104,6 +105,7 @@ const LoginPage = ({ onLogin }) => {
                   onChange={(event) => setPassword(event.target.value)}
                   className="w-full bg-transparent outline-none text-sm text-grid-text"
                   autoComplete="current-password"
+                  placeholder="********"
                   required
                 />
               </div>

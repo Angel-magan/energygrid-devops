@@ -53,6 +53,28 @@ const updateAdminUser = async (req, res, next) => {
 const updateAdminUserStatus = async (req, res, next) => {
   try {
     const { is_active: isActive } = req.body;
+
+    // Prevent an admin from deactivating themselves
+    try {
+      const requesterId = String(req.user?.sub || "");
+      const targetId = String(req.params.id || "");
+      if (
+        requesterId &&
+        targetId &&
+        requesterId === targetId &&
+        isActive === false
+      ) {
+        return res
+          .status(400)
+          .json({
+            error: true,
+            message: "No puedes desactivar tu propia cuenta",
+          });
+      }
+    } catch (e) {
+      // ignore parsing errors and continue
+    }
+
     const user = await authService.setAdminUserStatus(req.params.id, isActive);
     res.status(200).json({ user });
   } catch (err) {
