@@ -37,7 +37,7 @@ const LoginPage = ({ onLogin }) => {
             ENERGYGRID
           </div>
           <h1 className="text-4xl font-black tracking-tight leading-tight max-w-xl">
-            Centro de Control Eléctrico El Salvador
+            Centro de Control Eléctrico Santa Ana, El Salvador
           </h1>
           <p className="text-grid-dim mt-4 max-w-lg leading-7">
             Acceso protegido con JWT, roles y base de datos separada para
