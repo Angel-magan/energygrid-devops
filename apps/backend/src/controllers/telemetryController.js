@@ -25,7 +25,7 @@ const createTelemetry = async (req, res) => {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `Payload rechazado por datos inválidos: ${JSON.stringify(req.body)}`
+        message: `Payload rechazado por datos inválidos: ${JSON.stringify(req.body)}`,
       });
       return res.status(400).json({ error: "Invalid data" });
     }
@@ -33,7 +33,7 @@ const createTelemetry = async (req, res) => {
     // Guardamos en la base de datos de telemetría operativa
     const savedData = await telemetryService.saveTelemetry(req.body);
 
-    // ❌ ELIMINADO: console.log(`[INFO] Telemetry stored...`); 
+    // ❌ ELIMINADO: console.log(`[INFO] Telemetry stored...`);
     // Explicación: Ya no imprimimos texto por cada envío exitoso de 5s para salvar la consola.
 
     // 1. Auditoría de Seguridad: Si detectamos patrones extraños de SQL Injection
@@ -41,7 +41,7 @@ const createTelemetry = async (req, res) => {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `ALERTA DE SEGURIDAD: Inyección sospechosa mitigada en distrito='${district_id}'`
+        message: `ALERTA DE SEGURIDAD: Inyección sospechosa mitigada en distrito='${district_id}'`,
       });
     }
 
@@ -51,7 +51,7 @@ const createTelemetry = async (req, res) => {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `⚡ SOBRECARGA CRÍTICA DETECTADA: ${district_id} operando a ${consumption.toFixed(2)} kW`
+        message: `⚡ SOBRECARGA CRÍTICA DETECTADA: ${district_id} operando a ${consumption.toFixed(2)} kW`,
       });
     }
 
@@ -61,7 +61,7 @@ const createTelemetry = async (req, res) => {
     appendLog({
       level: "ERROR",
       service: "Database API",
-      message: `Fallo catastrófico en inserción de telemetría: ${error.message}`
+      message: `Fallo catastrófico en inserción de telemetría: ${error.message}`,
     });
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -87,4 +87,19 @@ const getAllTelemetry = async (req, res) => {
   }
 };
 
-module.exports = { createTelemetry, getTelemetry, getAllTelemetry };
+const getTelemetryPeaks = async (req, res) => {
+  try {
+    const data = await telemetryService.getTelemetryPeaks();
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("[ERROR] Fetching telemetry peaks:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  createTelemetry,
+  getTelemetry,
+  getAllTelemetry,
+  getTelemetryPeaks,
+};

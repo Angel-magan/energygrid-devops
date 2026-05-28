@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
+import TelemetryPeaksPage from "./pages/TelemetryPeaksPage";
 import DevOpsLogsPage from "./pages/DevOpsLogsPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
 import DistrictsPage from "./pages/DistrictsPage";
@@ -104,6 +105,19 @@ function App() {
               allowedRoles={["admin", "user"]}
             >
               <TelemetryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/telemetry-peaks"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
+              <TelemetryPeaksPage />
             </ProtectedRoute>
           }
         />
