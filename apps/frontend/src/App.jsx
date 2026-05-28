@@ -4,9 +4,11 @@ import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
+import TelemetryPeaksPage from "./pages/TelemetryPeaksPage";
 import DevOpsLogsPage from "./pages/DevOpsLogsPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
 import DistrictsPage from "./pages/DistrictsPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
@@ -20,7 +22,7 @@ function App() {
 
     try {
       return { token, user: JSON.parse(storedUser) };
-    } catch (err) {
+    } catch {
       localStorage.removeItem("eg_auth_token");
       localStorage.removeItem("eg_auth_user");
       return null;
@@ -53,9 +55,6 @@ function App() {
             )
           }
         />
-
-        {/* ⚡ CONFLICTO SOLUCIONADO: Usamos tu DashboardPage directo y protegido */}
-        {/* Mostrar dashboard público en la ruta raíz para que sea la primera pantalla */}
         <Route path="/" element={<DashboardPage />} />
 
         <Route
@@ -85,6 +84,19 @@ function App() {
         />
 
         <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
+              <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/telemetry"
           element={
             <ProtectedRoute
@@ -93,6 +105,19 @@ function App() {
               allowedRoles={["admin", "user"]}
             >
               <TelemetryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/telemetry-peaks"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
+              <TelemetryPeaksPage />
             </ProtectedRoute>
           }
         />
