@@ -1,0 +1,52 @@
+#!/bin/bash
+
+CONTAINERS=$(docker ps --format "{{.Names}}" 2>/dev/null | sort)
+
+to_bytes() {
+    local v="$1"
+    local r=0
+    case "$v" in
+        *GiB) r=$(echo "$v" | sed 's/GiB//' | awk '{printf "%.0f", $1 * 1073741824}') ;;
+        *MiB) r=$(echo "$v" | sed 's/MiB//' | awk '{printf "%.0f", $1 * 1048576}') ;;
+        *KiB) r=$(echo "$v" | sed 's/KiB//' | awk '{printf "%.0f", $1 * 1024}') ;;
+        *GB)  r=$(echo "$v" | sed 's/GB//'  | awk '{printf "%.0f", $1 * 1000000000}') ;;
+        *MB)  r=$(echo "$v" | sed 's/MB//'  | awk '{printf "%.0f", $1 * 1000000}') ;;
+        *kB)  r=$(echo "$v" | sed 's/kB//'  | awk '{printf "%.0f", $1 * 1000}') ;;
+        *B)   r=$(echo "$v" | sed 's/B//'   | tr -d ' ') ;;
+        *k)   r=$(echo "$v" | sed 's/k//'   | awk '{printf "%.0f", $1 * 1000}') ;;
+        *M)   r=$(echo "$v" | sed 's/M//'   | awk '{printf "%.0f", $1 * 1000000}') ;;
+        *G)   r=$(echo "$v" | sed 's/G//'   | awk '{printf "%.0f", $1 * 1000000000}') ;;
+        *T)   r=$(echo "$v" | sed 's/T//'   | awk '{printf "%.0f", $1 * 1000000000000}') ;;
+    esac
+    echo "${r:-0}"
+}
+
+if [ "$1" = "config" ]; then
+    echo "graph_title Docker Disk I/O"
+    echo "graph_vlabel bytes/sec"
+    echo "graph_category docker"
+    echo "graph_info Disk I/O per container (bytes)"
+    echo "graph_args --base 1000 -l 0"
+    for c in $CONTAINERS; do
+        name=$(echo "$c" | tr '.-' '_')
+        echo "${name}_r.label $c Read"
+        echo "${name}_r.type COUNTER"
+        echo "${name}_r.min 0"
+        echo "${name}_w.label $c Write"
+        echo "${name}_w.type COUNTER"
+        echo "${name}_w.min 0"
+    done
+    exit 0
+fi
+
+OUT=""
+for c in $CONTAINERS; do
+    name=$(echo "$c" | tr '.-' '_')
+    io=$(docker stats --no-stream --format "{{.BlockIO}}" "$c" 2>/dev/null)
+    read_val=$(echo "$io" | awk '{print $1}')
+    write_val=$(echo "$io" | awk '{print $3}')
+    OUT="${OUT}${name}_r.value $(to_bytes "$read_val")\n"
+    OUT="${OUT}${name}_w.value $(to_bytes "$write_val")\n"
+done
+printf "$OUT" > /tmp/disk_fetch_debug.txt
+printf "$OUT"

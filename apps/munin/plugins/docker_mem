@@ -1,0 +1,36 @@
+#!/bin/bash
+
+CONTAINERS=$(docker ps --format "{{.Names}}" 2>/dev/null | sort)
+
+to_mb() {
+    local v="$1"
+    local val=0
+    case "$v" in
+        *GiB) val=$(echo "$v" | sed 's/GiB//' | awk '{printf "%.0f", $1 * 1024}') ;;
+        *MiB) val=$(echo "$v" | sed 's/MiB//' | awk '{printf "%.1f", $1}') ;;
+        *KiB) val=$(echo "$v" | sed 's/KiB//' | awk '{printf "%.3f", $1 / 1024}') ;;
+    esac
+    echo "${val:-0}"
+}
+
+if [ "$1" = "config" ]; then
+    echo "graph_title Docker Memory Usage"
+    echo "graph_vlabel MB"
+    echo "graph_category docker"
+    echo "graph_info Memory usage per container (MB)"
+    echo "graph_args --base 1024 -l 0"
+    for c in $CONTAINERS; do
+        name=$(echo "$c" | tr '.-' '_')
+        echo "${name}.label $c"
+        echo "${name}.type GAUGE"
+        echo "${name}.min 0"
+        echo "${name}.draw AREASTACK"
+    done
+    exit 0
+fi
+
+for c in $CONTAINERS; do
+    name=$(echo "$c" | tr '.-' '_')
+    used=$(docker stats --no-stream --format "{{.MemUsage}}" "$c" 2>/dev/null | awk '{print $1}')
+    echo "${name}.value $(to_mb "$used")"
+done

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+CONTAINERS=$(docker ps --format "{{.Names}}" 2>/dev/null | sort)
+
+if [ "$1" = "config" ]; then
+    echo "graph_title Docker CPU Usage"
+    echo "graph_vlabel % CPU"
+    echo "graph_category docker"
+    echo "graph_info CPU usage per container (percentage)"
+    echo "graph_args --base 1000 -l 0"
+    echo "graph_scale no"
+    for c in $CONTAINERS; do
+        name=$(echo "$c" | tr '.-' '_')
+        echo "${name}.label $c"
+        echo "${name}.type GAUGE"
+        echo "${name}.min 0"
+        echo "${name}.max 100"
+        echo "${name}.draw AREASTACK"
+    done
+    exit 0
+fi
+
+for c in $CONTAINERS; do
+    name=$(echo "$c" | tr '.-' '_')
+    cpu=$(docker stats --no-stream --format "{{.CPUPerc}}" "$c" 2>/dev/null | sed 's/%//')
+    echo "${name}.value ${cpu:-0}"
+done

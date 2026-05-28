@@ -137,8 +137,47 @@ services:
       - eg-backend
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    command: >
+      sh -c "rm -f /var/log/nginx/access.log /var/log/nginx/error.log && nginx -g 'daemon off;'"
     networks:
       - energygrid_network
+
+  # Microservicio de Monitoreo: Munin
+  eg-munin:
+    build:
+      context: ./apps/munin
+      dockerfile: Dockerfile
+    container_name: eg-munin
+    restart: unless-stopped
+    ports:
+      - "4948:4948"
+    volumes:
+      - munin_data:/var/lib/munin
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      TZ: America/Mexico_City
+    networks:
+      - energygrid_network
+
+  # Microservicio de Seguridad: Fail2ban
+  eg-fail2ban:
+    build:
+      context: ./apps/fail2ban
+      dockerfile: Dockerfile
+    container_name: eg-fail2ban
+    restart: unless-stopped
+    network_mode: "service:eg-gateway"
+    depends_on:
+      - eg-gateway
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - nginx_logs:/var/log/nginx:ro
+      - ./infrastructure/fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+      - ./infrastructure/fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - /etc/localtime:/etc/localtime:ro
 
 networks:
   energygrid_network:
@@ -147,3 +186,5 @@ networks:
 volumes:
   eg_db_data:
   eg_auth_db_data:
+  munin_data:
+  nginx_logs:
