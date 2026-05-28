@@ -3,7 +3,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  ReferenceDot,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -283,40 +282,33 @@ const TelemetryPeaksPage = () => {
       }));
   }, [telemetryData, districtCapacities]);
 
-  const peakSummary = useMemo(() => {
-    if (!chartRowsAll.length) return { highest: null, lowest: null };
+  const recentRows = useMemo(() => {
+    if (!chartRowsAll.length) return [];
+    return chartRowsAll.slice(-30);
+  }, [chartRowsAll]);
 
-    const highest = chartRowsAll.reduce((current, row) => {
+  const peakSummary = useMemo(() => {
+    if (!recentRows.length) return { highest: null, lowest: null };
+
+    const highest = recentRows.reduce((current, row) => {
       if (!current || row.consumptionKw > current.consumptionKw) return row;
       return current;
     }, null);
 
-    const lowest = chartRowsAll.reduce((current, row) => {
+    const lowest = recentRows.reduce((current, row) => {
       if (!current || row.consumptionKw < current.consumptionKw) return row;
       return current;
     }, null);
 
     return { highest, lowest };
-  }, [chartRowsAll]);
+  }, [recentRows]);
 
   const chartRows = useMemo(() => {
-    if (!chartRowsAll.length) return [];
-
-    const recentRows = chartRowsAll.slice(-30);
-    const selectedRows = new Map(recentRows.map((row) => [row.id, row]));
-
-    if (peakSummary.highest)
-      selectedRows.set(peakSummary.highest.id, peakSummary.highest);
-    if (peakSummary.lowest)
-      selectedRows.set(peakSummary.lowest.id, peakSummary.lowest);
-
-    return [...selectedRows.values()]
-      .sort((a, b) => a.timestampMs - b.timestampMs)
-      .map((row, index) => ({
-        ...row,
-        chartIndex: index + 1,
-      }));
-  }, [chartRowsAll, peakSummary.highest, peakSummary.lowest]);
+    return recentRows.map((row, index) => ({
+      ...row,
+      chartIndex: index + 1,
+    }));
+  }, [recentRows]);
 
   const riskDistricts = useMemo(() => {
     if (!chartRowsAll.length) return [];
@@ -447,36 +439,8 @@ const TelemetryPeaksPage = () => {
                       strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#telemetryConsumptionFill)"
-                      dot={{ r: 2.5, fill: "#2fb1ff", strokeWidth: 0 }}
-                      activeDot={{
-                        r: 5,
-                        fill: "#ffffff",
-                        stroke: "#2fb1ff",
-                        strokeWidth: 2,
-                      }}
+                      isAnimationActive={false}
                     />
-                    {peakSummary.highest && (
-                      <ReferenceDot
-                        x={peakSummary.highest.chartIndex}
-                        y={peakSummary.highest.consumptionKw}
-                        r={7}
-                        fill="#f59e0b"
-                        stroke="#fff7ed"
-                        strokeWidth={2}
-                        ifOverflow="visible"
-                      />
-                    )}
-                    {peakSummary.lowest && (
-                      <ReferenceDot
-                        x={peakSummary.lowest.chartIndex}
-                        y={peakSummary.lowest.consumptionKw}
-                        r={7}
-                        fill="#22c55e"
-                        stroke="#ecfdf5"
-                        strokeWidth={2}
-                        ifOverflow="visible"
-                      />
-                    )}
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
