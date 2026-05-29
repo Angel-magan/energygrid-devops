@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import {} from "recharts";
 import {
   Activity,
   AlertTriangle,
@@ -25,8 +26,8 @@ import {
 } from "../utils/districtCapacity";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import AutomatedInsights from "../components/telemetry/AutomatedInsights"; 
-import { FileDown } from "lucide-react"; 
+import AutomatedInsights from "../components/telemetry/AutomatedInsights";
+import { FileDown } from "lucide-react";
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -36,13 +37,6 @@ const toNumber = (value) => {
 };
 
 const safeText = (value) => (typeof value === "string" ? value : "");
-
-const getUsagePct = (consumptionKw, capacityKw) => {
-  const c = toNumber(consumptionKw);
-  const cap = toNumber(capacityKw);
-  if (!Number.isFinite(c) || !Number.isFinite(cap) || cap <= 0) return NaN;
-  return (c / cap) * 100;
-};
 
 const getSeverity = (usagePct) => {
   if (!Number.isFinite(usagePct)) return "CRITICAL";
@@ -327,6 +321,10 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
     toTs,
   ]);
 
+  const chartRows = useMemo(() => {
+    return filteredRows;
+  }, [filteredRows]);
+
   const kpis = useMemo(() => {
     const received = enrichedRows.length;
     const districtsActive = new Set(
@@ -356,48 +354,86 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
   // Función Automatizada para Generación de Reporte PDF Corporativo
   const downloadPDFReport = () => {
     const doc = new jsPDF();
-    
+
     // Configurar encabezado del PDF estilo Cyberpunk/Grid corporativo
-    doc.setFillColor(20, 24, 33); 
+    doc.setFillColor(20, 24, 33);
     doc.rect(0, 0, 210, 40, "F");
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("ENERGYGRID - REPORTE DE CONTINGENCIA", 14, 18);
-    
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`Generado: ${new Date().toLocaleString()} | Estado de Red: Virtual Real-Time`, 14, 25);
-    doc.text(`Filtros Activos: Distrito: [${districtQuery || 'Todos'}] | Severidad: [${severityFilter}]`, 14, 32);
+    doc.text(
+      `Generado: ${new Date().toLocaleString()} | Estado de Red: Virtual Real-Time`,
+      14,
+      25,
+    );
+    doc.text(
+      `Filtros Activos: Distrito: [${districtQuery || "Todos"}] | Severidad: [${severityFilter}]`,
+      14,
+      32,
+    );
 
     // Resumen Ejecutivo de Anomalías de Infraestructura
     doc.setTextColor(20, 24, 33);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("1. RESUMEN DE ANOMALÍAS DE TELEMETRÍA (AUDITORÍA DOCKER)", 14, 52);
-    
+    doc.text(
+      "1. RESUMEN DE ANOMALÍAS DE TELEMETRÍA (AUDITORÍA DOCKER)",
+      14,
+      52,
+    );
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`- Timestamps Fuera de Época o Inválidos: ${anomalies.invalidTimestamps.length}`, 19, 60);
-    doc.text(`- Registros con Valores Fuera de Rango Operativo: ${anomalies.outOfRange.length}`, 19, 66);
-    doc.text(`- Intentos de Inyección de Código (SQL/Sanitarizados): ${anomalies.sqlInjections.length}`, 19, 72);
-    doc.text(`- Registros de Red Corruptos/Incompletos: ${anomalies.corrupt.length}`, 19, 78);
+    doc.text(
+      `- Timestamps Fuera de Época o Inválidos: ${anomalies.invalidTimestamps.length}`,
+      19,
+      60,
+    );
+    doc.text(
+      `- Registros con Valores Fuera de Rango Operativo: ${anomalies.outOfRange.length}`,
+      19,
+      66,
+    );
+    doc.text(
+      `- Intentos de Inyección de Código (SQL/Sanitarizados): ${anomalies.sqlInjections.length}`,
+      19,
+      72,
+    );
+    doc.text(
+      `- Registros de Red Corruptos/Incompletos: ${anomalies.corrupt.length}`,
+      19,
+      78,
+    );
 
     // Tabla de Registros Filtrados Actuales
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.text("2. FLUJO EN VIVO ANALIZADO", 14, 90);
 
-    const tableColumns = ["Timestamp", "Distrito", "Subestación", "Consumo (kW)", "Voltaje (V)", "Frecuencia (Hz)", "Estado"];
-    const tableRows = filteredRows.map(r => [
+    const tableColumns = [
+      "Timestamp",
+      "Distrito",
+      "Subestación",
+      "Consumo (kW)",
+      "Voltaje (V)",
+      "Frecuencia (Hz)",
+      "Estado",
+    ];
+    const tableRows = filteredRows.map((r) => [
       formatDateTime(r.timestampMs),
       r.districtId || "—",
       r.substationId || "—",
-      Number.isFinite(r.consumptionKw) ? `${r.consumptionKw.toLocaleString()} kW` : "NaN",
+      Number.isFinite(r.consumptionKw)
+        ? `${r.consumptionKw.toLocaleString()} kW`
+        : "NaN",
       `${r.voltage.toFixed(1)} V`,
       `${r.frequencyHz.toFixed(2)} Hz`,
-      r.status
+      r.status,
     ]);
 
     doc.autoTable({
@@ -407,7 +443,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
       theme: "striped",
       headStyles: { fillColor: [14, 165, 233], fontSize: 9 }, // Color Cyan de tu interfaz
       styles: { fontSize: 8 },
-      margin: { top: 10 }
+      margin: { top: 10 },
     });
 
     // Guardar archivo binario descargable
@@ -440,105 +476,81 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
             <div className="flex items-start gap-3">
               <AlertTriangle className="text-grid-danger mt-0.5" size={18} />
               <div>
-                <p className="font-bold text-grid-text">Error de conexión</p>
-                <p className="text-sm text-grid-dim mt-1 font-mono-tech">
-                  {error}
+                <p className="text-sm font-semibold text-grid-danger">
+                  Error al cargar telemetría
+                </p>
+                <p className="text-xs text-grid-dim mt-1">
+                  {error?.message || String(error)}
                 </p>
               </div>
             </div>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="bg-grid-panel p-6 rounded-xl border border-grid-border shadow-lg hover:-translate-y-1 transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-lg bg-grid-cyan/10">
-                <Activity size={22} className="text-grid-cyan" />
-              </div>
-              <div>
-                <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
-                  Registros recibidos
-                </p>
-                <h3 className="text-2xl font-bold mt-1 font-mono-tech">
-                  {loading ? "—" : kpis.received}
-                </h3>
-              </div>
-            </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.05 }}
-            className="bg-grid-panel p-6 rounded-xl border border-grid-border shadow-lg hover:-translate-y-1 transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-lg bg-yellow-500/10">
-                <MapPin size={22} className="text-yellow-300" />
+        <section className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+          <div className="bg-grid-panel border border-grid-border rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-grid-deep/40 flex items-center justify-center">
+              <Activity size={20} className="text-grid-cyan" />
+            </div>
+            <div>
+              <div className="text-xs text-grid-dim uppercase tracking-wider">
+                Registros recibidos
               </div>
-              <div>
-                <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
-                  Distritos activos
-                </p>
-                <h3 className="text-2xl font-bold mt-1 font-mono-tech">
-                  {loading ? "—" : kpis.districtsActive}
-                </h3>
+              <div className="text-3xl font-extrabold text-grid-text">
+                {kpis.received}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.1 }}
-            className="bg-grid-panel p-6 rounded-xl border border-grid-border shadow-lg hover:-translate-y-1 transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-lg bg-grid-blue/10">
-                <Clock size={22} className="text-grid-cyan" />
+          <div className="bg-grid-panel border border-grid-border rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-grid-deep/40 flex items-center justify-center">
+              <MapPin size={20} className="text-yellow-300" />
+            </div>
+            <div>
+              <div className="text-xs text-grid-dim uppercase tracking-wider">
+                Distritos activos
               </div>
-              <div>
-                <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
-                  Última actualización
-                </p>
-                <h3 className="text-2xl font-bold mt-1 font-mono-tech">
-                  {loading ? "—" : kpis.lastUpdateText}
-                </h3>
+              <div className="text-3xl font-extrabold text-grid-text">
+                {kpis.districtsActive}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: 0.15 }}
-            className="bg-grid-panel p-6 rounded-xl border border-grid-border shadow-lg hover:-translate-y-1 transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-lg bg-grid-danger/10">
-                <Zap size={22} className="text-grid-danger" />
+          <div className="bg-grid-panel border border-grid-border rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-grid-deep/40 flex items-center justify-center">
+              <Clock size={20} className="text-grid-cyan" />
+            </div>
+            <div>
+              <div className="text-xs text-grid-dim uppercase tracking-wider">
+                Última actualización
               </div>
-              <div>
-                <p className="text-xs text-grid-dim font-semibold uppercase tracking-wider">
-                  Eventos por minuto
-                </p>
-                <h3 className="text-2xl font-bold mt-1 font-mono-tech">
-                  {loading ? "—" : kpis.eventsPerMin}
-                </h3>
+              <div className="text-3xl font-extrabold text-grid-text">
+                {kpis.lastUpdateText}
               </div>
             </div>
-          </motion.div>
-        </div>
-        <AutomatedInsights 
-          filteredRows={filteredRows} 
+          </div>
+
+          <div className="bg-grid-panel border border-grid-border rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-grid-deep/40 flex items-center justify-center">
+              <Zap size={20} className="text-red-400" />
+            </div>
+            <div>
+              <div className="text-xs text-grid-dim uppercase tracking-wider">
+                Eventos por minuto
+              </div>
+              <div className="text-3xl font-extrabold text-grid-text">
+                {kpis.eventsPerMin}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <AutomatedInsights
+          filteredRows={filteredRows}
           anomalies={anomalies}
           activeFilters={{
             isTimeFilter: Boolean(fromTs || toTs),
-            summary: `Distrito: ${districtQuery || 'Todos'} | Severidad: ${severityFilter}`
+            summary: `Distrito: ${districtQuery || "Todos"} | Severidad: ${severityFilter}`,
           }}
         />
         <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl mb-8">
@@ -549,9 +561,13 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                 Filtros
               </h2>
             </div>
-            
+
             {/* Botón dinámico: solo resalta si hay algún filtro modificado */}
-            {(districtQuery || severityFilter !== "ALL" || sortConsumption !== "desc" || fromTs || toTs) && (
+            {(districtQuery ||
+              severityFilter !== "ALL" ||
+              sortConsumption !== "desc" ||
+              fromTs ||
+              toTs) && (
               <button
                 onClick={handleClearFilters}
                 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-grid-cyan hover:text-grid-text bg-grid-cyan/10 hover:bg-grid-cyan/20 border border-grid-cyan/20 px-3 py-1.5 rounded-lg transition-all duration-200"
@@ -645,7 +661,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                 Telemetría en vivo
               </h2>
             </div>
-            
+
             {/* Contenedor Flex para la Insignia de conteo y el nuevo Botón PDF */}
             <div className="flex items-center gap-3">
               <button
@@ -657,7 +673,7 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
                 <FileDown size={14} />
                 <span>Exportar Reporte</span>
               </button>
-              
+
               <div className="text-xs text-grid-dim font-mono-tech bg-grid-deep/40 px-2.5 py-1.5 rounded-lg border border-grid-border/30">
                 Mostrando {filteredRows.length} / {enrichedRows.length}
               </div>
