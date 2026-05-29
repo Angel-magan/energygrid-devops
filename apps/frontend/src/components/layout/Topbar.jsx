@@ -1,7 +1,10 @@
-import { LogOut, Menu, LogIn } from "lucide-react";
+import { LogOut, Menu, LogIn, Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useDarkMode } from "../../hooks/useDarkMode";
 
 const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout, isAuthenticated }) => {
+  const { isDark, toggleDarkMode } = useDarkMode();
+
   return (
     <header className="h-[70px] bg-grid-panel border-b border-grid-border flex items-center justify-between px-6 select-none">
       <div className="flex items-center gap-4">
@@ -22,6 +25,17 @@ const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout, isAuthenticated }) =
         <div className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-grid-dim border-l border-grid-border/60 pl-4 hidden sm:block">
           Centro de Control Electrico
         </div>
+        
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-dim hover:text-grid-cyan hover:border-grid-cyan/40 transition-all cursor-pointer active:scale-95 ml-1 mr-1"
+          aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          title={isDark ? "Modo Claro" : "Modo Oscuro"}
+        >
+          {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
         {isAuthenticated ? (
           <button
             type="button"
