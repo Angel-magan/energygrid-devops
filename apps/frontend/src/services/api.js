@@ -27,9 +27,29 @@ export const fetchTelemetry = async () => {
   return response.data;
 };
 
-export const fetchTelemetryAll = async () => {
-  const response = await axios.get(`${API_URL}/telemetry/all`);
+export const fetchTelemetryAll = async ({ page = 1, limit = 20 } = {}) => {
+  const response = await axios.get(`${API_URL}/telemetry/all`, {
+    params: { page, limit },
+  });
   return response.data;
+};
+
+export const normalizeTelemetryAllResponse = (response) => {
+  if (Array.isArray(response)) {
+    return { data: response, pagination: null };
+  }
+
+  if (Array.isArray(response?.data)) {
+    return {
+      data: response.data,
+      pagination: response.pagination ?? null,
+    };
+  }
+
+  return {
+    data: [],
+    pagination: response?.pagination ?? null,
+  };
 };
 
 export const fetchTelemetryPeaks = async () => {

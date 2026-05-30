@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import {} from "recharts";
 import {
   Activity,
@@ -13,6 +12,8 @@ import {
   Zap,
   Bug,
   RotateCcw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import MainLayout from "../components/layout/MainLayout";
@@ -136,7 +137,14 @@ const formatRelativeFromNow = (ms) => {
 };
 
 const TelemetryPage = ({ data: dataProp } = {}) => {
-  const { data: hookData, loading, error } = useTelemetry(5000, { all: true });
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+  const {
+    data: hookData,
+    pagination,
+    loading,
+    error,
+  } = useTelemetry(5000, { all: true, page, limit: pageSize });
   const { data: districts } = useDistricts();
   const data = Array.isArray(dataProp) ? dataProp : hookData;
 
@@ -153,6 +161,10 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
     setFromTs("");
     setToTs("");
   };
+
+  const currentPage = pagination?.currentPage ?? page;
+  const totalPages = pagination?.totalPages ?? 1;
+  const totalItems = pagination?.totalItems ?? data.length;
 
   const districtCapacities = useMemo(
     () => buildDistrictCapacityMap(districts),
@@ -320,10 +332,6 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
     fromTs,
     toTs,
   ]);
-
-  const chartRows = useMemo(() => {
-    return filteredRows;
-  }, [filteredRows]);
 
   const kpis = useMemo(() => {
     const received = enrichedRows.length;
@@ -675,8 +683,36 @@ const TelemetryPage = ({ data: dataProp } = {}) => {
               </button>
 
               <div className="text-xs text-grid-dim font-mono-tech bg-grid-deep/40 px-2.5 py-1.5 rounded-lg border border-grid-border/30">
-                Mostrando {filteredRows.length} / {enrichedRows.length}
+                Página {currentPage} de {totalPages} | {filteredRows.length} /{" "}
+                {totalItems}
               </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="text-xs text-grid-dim">
+              Mostrando {filteredRows.length} registros en esta página.
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((value) => Math.max(1, value - 1))}
+                disabled={currentPage <= 1 || loading}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-grid-border/40 bg-grid-deep/40 px-3 py-2 text-xs font-bold text-grid-text transition-colors hover:bg-grid-blue/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft size={14} />
+                Anterior
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setPage((value) => Math.min(totalPages, value + 1))
+                }
+                disabled={currentPage >= totalPages || loading}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-grid-cyan/30 bg-grid-cyan/10 px-3 py-2 text-xs font-bold text-grid-cyan transition-colors hover:bg-grid-cyan/20 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
           <div

@@ -19,7 +19,11 @@ import {
 import MainLayout from "../components/layout/MainLayout";
 import { useTelemetry } from "../hooks/useTelemetry";
 import { useDistricts } from "../hooks/useDistricts";
-import { fetchTelemetryAll, fetchTelemetryPeaks } from "../services/api";
+import {
+  fetchTelemetryAll,
+  fetchTelemetryPeaks,
+  normalizeTelemetryAllResponse,
+} from "../services/api";
 import {
   buildDistrictCapacityMap,
   getDistrictCapacityMaxKw,
@@ -185,25 +189,20 @@ const TelemetryPeaksPage = () => {
           const telemetry = await fetchTelemetryAll();
           if (!isMounted) return;
 
-          const fallbackRows = Array.isArray(telemetry)
-            ? telemetry
-                .map((row, index) => ({
-                  id:
-                    row?.id ??
-                    `${row?.district_id ?? ""}-${row?.substation_id ?? ""}-${row?.timestamp ?? index}`,
-                  districtId: row?.district_id ?? "",
-                  districtName:
-                    row?.district_name ??
-                    row?.districtId ??
-                    row?.district_id ??
-                    "",
-                  substationId: row?.substation_id ?? "",
-                  consumptionKw: Number(row?.consumption_kw),
-                  timestamp: row?.timestamp,
-                  capacityKw: Number(row?.district_capacity_kw),
-                }))
-                .filter((row) => Number.isFinite(row.consumptionKw))
-            : [];
+          const fallbackRows = normalizeTelemetryAllResponse(telemetry)
+            .data.map((row, index) => ({
+              id:
+                row?.id ??
+                `${row?.district_id ?? ""}-${row?.substation_id ?? ""}-${row?.timestamp ?? index}`,
+              districtId: row?.district_id ?? "",
+              districtName:
+                row?.district_name ?? row?.districtId ?? row?.district_id ?? "",
+              substationId: row?.substation_id ?? "",
+              consumptionKw: Number(row?.consumption_kw),
+              timestamp: row?.timestamp,
+              capacityKw: Number(row?.district_capacity_kw),
+            }))
+            .filter((row) => Number.isFinite(row.consumptionKw));
 
           setPeakInsights(buildPeakInsights(fallbackRows));
         } catch {
