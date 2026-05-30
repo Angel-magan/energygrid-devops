@@ -110,9 +110,9 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
-       args:
-         - VITE_API_URL=http://44.223.2.142:3000/api
-         - VITE_AUTH_API_URL=http://44.223.2.142:3000/api
+      args:
+        - VITE_API_URL=http://44.223.2.142:3000/api
+        - VITE_AUTH_API_URL=http://44.223.2.142:3000/api
       target: builder
     depends_on:
       - eg-gateway
