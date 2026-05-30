@@ -50,3 +50,30 @@ jobs:
       run: |
         cd test
         node energygrid.test.js
+
+    - name: Crear archivo .env temporal para pruebas de sintaxis
+      run: |
+        echo "DB_USER=test_user" >> .env
+        echo "DB_PASSWORD=test_pass" >> .env
+        echo "DB_NAME=energygrid_test" >> .env
+        echo "AUTH_DB_USER=auth_test_user" >> .env
+        echo "AUTH_DB_PASSWORD=auth_test_pass" >> .env
+        echo "AUTH_DB_NAME=energygrid_auth_test" >> .env
+        echo "AUTH_PORT=4000" >> .env
+        echo "JWT_SECRET=super_secret_test_key_unicaes" >> .env
+        echo "JWT_EXPIRES_IN=1h" >> .env
+        echo "NODE_ENV=test" >> .env
+
+    - name: Validar configuracion de Orquestacion (Docker)
+      run: |
+        docker compose config
+
+    - name: Instalar dependencias para la Suite de Tests
+      run: |
+        cd test
+        npm install selenium-webdriver
+
+    - name: Ejecutar Suite de Pruebas con Selenium
+      run: |
+        cd test
+        node energygrid.test.js
