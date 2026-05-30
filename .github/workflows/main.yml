@@ -1,0 +1,52 @@
+name: EnergyGrid CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-infrastructure:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Descargar codigo del repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js (Entorno)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Validar dependencias - Core Backend
+      run: |
+        if [ -d "apps/backend" ]; then
+          cd apps/backend
+          npm install
+        else
+          echo "apps/backend no encontrada, saltando paso"
+        fi
+        
+    - name: Validar dependencias - Auth Microservice
+      run: |
+        if [ -d "apps/auth-service" ]; then
+          cd apps/auth-service
+          npm install
+        else
+          echo "apps/auth-service no encontrada, saltando paso"
+        fi
+
+    - name: Validar configuracion de Orquestacion (Docker)
+      run: |
+        docker compose config
+
+    - name: Instalar dependencias para la Suite de Tests
+      run: |
+        cd test
+        npm install selenium-webdriver
+
+    - name: Ejecutar Suite de Pruebas con Selenium
+      run: |
+        cd test
+        node energygrid.test.js
