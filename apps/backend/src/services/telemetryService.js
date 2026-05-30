@@ -49,6 +49,56 @@ const getAllTelemetry = async () => {
   return result.rows;
 };
 
+// Obtener registros de telemetría paginados con metadatos de control
+const getAllTelemetryPaginated = async (page, limit) => {
+  // 1. Calculamos el desplazamiento (OFFSET)
+  const offset = (page - 1) * limit;
+
+  // 2. Consulta de Datos: Agregamos LIMIT y OFFSET parametrizados ($1 y $2)
+  const dataQuery = `
+    SELECT
+      t.id,
+      t.district_id,
+      d.name AS district_name,
+      t.substation_id,
+      t.consumption_kw,
+      t.timestamp,
+      d.capacity_max_kw AS district_capacity_kw
+    FROM telemetry t
+    LEFT JOIN districts d ON d.id = t.district_id
+    ORDER BY timestamp DESC
+    LIMIT $1 OFFSET $2;
+  `;
+
+  // 3. Consulta de Conteo: Contamos el total de filas en la tabla para la paginación
+  const countQuery = `
+    SELECT COUNT(*) FROM telemetry;
+  `;
+
+  // Ejecutamos ambas consultas a la base de datos
+  const dataResult = await db.query(dataQuery, [limit, offset]);
+  const countResult = await db.query(countQuery);
+
+  // Parseamos el total de ítems a número entero
+  const totalItems = parseInt(countResult.rows[0].count, 10);
+
+  // Calculamos el total de páginas redondeando hacia arriba
+  const totalPages = Math.ceil(totalItems / limit);
+
+  // Devolvemos el objeto estructurado idéntico a lo que espera tu nuevo controlador
+  return {
+    data: dataResult.rows,
+    totalItems,
+    totalPages,
+  };
+};
+
+// Recuerda exportar el nuevo método al final del archivo si manejas module.exports
+module.exports = {
+  getAllTelemetry, // Por si lo usa otro script
+  getAllTelemetryPaginated, // El nuevo método de control
+};
+
 const buildPeakReason = ({ row, averageKw, direction }) => {
   const valueKw = Number(row.consumption_kw);
   const capacityKw = Number(row.district_capacity_kw);
@@ -212,4 +262,5 @@ module.exports = {
   getLatestTelemetry,
   getAllTelemetry,
   getTelemetryPeaks,
+  getAllTelemetryPaginated,
 };
