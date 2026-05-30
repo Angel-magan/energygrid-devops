@@ -20,10 +20,17 @@ import TelemetryTable from "../components/telemetry/TelemetryTable";
 import SantaAnaMap from "../components/map/SantaAnaMap";
 import { isSuspiciousString } from "../utils/sanitizers";
 import { useTelemetry } from "../hooks/useTelemetry"; // 👈 Asegúrate de que la ruta apunte a tus hooks
+import { useDistricts } from "../hooks/useDistricts";
+import {
+  buildDistrictCapacityMap,
+  getDistrictCapacityMaxKw,
+  getUsagePct,
+} from "../utils/districtCapacity";
 
 const Dashboard = () => {
   // ⚡ El Dashboard ahora se conecta al hook optimizado de 5 segundos de forma autónoma
   const { data: telemetryData, loading } = useTelemetry(5000);
+  const { data: districts } = useDistricts();
 
   // Re-mapeamos la variable interna de datos de forma segura
   const data = telemetryData || [];
@@ -38,6 +45,11 @@ const Dashboard = () => {
     );
   }, [data]);
 
+  const districtCapacities = useMemo(
+    () => buildDistrictCapacityMap(districts),
+    [districts],
+  );
+
   // --- CÁLCULOS SEGUROS (Evitan el error .toFixed) ---
   const totalConsumption = useMemo(() => {
     if (!filteredData || filteredData.length === 0) return "0.00";
@@ -50,7 +62,15 @@ const Dashboard = () => {
 
   const alertCount = useMemo(() => {
     if (!filteredData) return 0;
-    return filteredData.filter((d) => Number(d.consumption_kw) > 4750).length;
+    return filteredData.filter((d) => {
+      const districtId = String(d.district_id || "");
+      const capacityKw = getDistrictCapacityMaxKw(
+        districtId,
+        districtCapacities,
+      );
+      const usagePct = getUsagePct(d.consumption_kw, capacityKw);
+      return Number.isFinite(usagePct) && usagePct >= 95;
+    }).length;
   }, [filteredData]);
 
   const chartData = useMemo(() => {
@@ -179,8 +199,76 @@ const Dashboard = () => {
                 Mapa de Carga - Sector Occidente
               </h2>
             </div>
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Normal"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Carga dentro de rangos normales. Sin acción requerida.
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#22c55e" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Normal (&lt;60%)</span>
+              </div>
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Moderado"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Aumento de carga. Monitorizar y preparar redistribución si
+                    continúa subiendo.
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#eab308" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Moderado (60–80%)</span>
+              </div>
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Alto"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Carga alta. Considerar balanceo y medidas de mitigación.
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#ea580c" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Alto (80–95%)</span>
+              </div>
+              <div
+                className="flex items-center gap-3 relative group"
+                aria-label="Leyenda: Crítico"
+              >
+                <div className="absolute -top-9 left-0 transform translate-y-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                  <div className="bg-grid-deep text-xs text-grid-text border border-grid-border rounded px-2 py-1 whitespace-nowrap">
+                    Sobrecarga crítica. Acción inmediata requerida (desconectar
+                    cargas no críticas).
+                  </div>
+                </div>
+                <span
+                  className="w-4 h-4 rounded-sm"
+                  style={{ background: "#7f1d1d" }}
+                ></span>
+                <span className="text-xs text-grid-dim">Crítico (≥95%)</span>
+              </div>
+            </div>
+
             <div className="bg-grid-deep/30 rounded-xl border border-grid-border/40 overflow-hidden min-h-85 flex-1">
-              <SantaAnaMap data={filteredData} />
+              <SantaAnaMap
+                data={filteredData}
+                districtCapacities={districtCapacities}
+              />
             </div>
           </div>
           <div className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl flex flex-col">

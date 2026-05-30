@@ -23,7 +23,70 @@ const me = async (req, res, next) => {
   }
 };
 
+const listAdminUsers = async (req, res, next) => {
+  try {
+    const users = await authService.getAdminUsers();
+    res.status(200).json({ users });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const createAdminUser = async (req, res, next) => {
+  try {
+    const user = await authService.createAdminUser(req.body);
+    res.status(201).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateAdminUser = async (req, res, next) => {
+  try {
+    const user = await authService.updateAdminUser(req.params.id, req.body);
+    res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateAdminUserStatus = async (req, res, next) => {
+  try {
+    const { is_active: isActive } = req.body;
+
+    // Prevent an admin from deactivating themselves
+    try {
+      const requesterId = String(req.user?.sub || "");
+      const targetId = String(req.params.id || "");
+      if (
+        requesterId &&
+        targetId &&
+        requesterId === targetId &&
+        isActive === false
+      ) {
+        return res
+          .status(400)
+          .json({
+            error: true,
+            message: "No puedes desactivar tu propia cuenta",
+          });
+      }
+    } catch (e) {
+      // ignore parsing errors and continue
+    }
+
+    const user = await authService.setAdminUserStatus(req.params.id, isActive);
+    res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   login,
   me,
+  listAdminUsers,
+  createAdminUser,
+  updateAdminUser,
+  updateAdminUserStatus,
 };

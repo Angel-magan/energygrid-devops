@@ -4,8 +4,11 @@ import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import AlertsPage from "./pages/AlertsPage";
 import TelemetryPage from "./pages/TelemetryPage";
+import TelemetryPeaksPage from "./pages/TelemetryPeaksPage";
 import DevOpsLogsPage from "./pages/DevOpsLogsPage";
 import SystemStatusPage from "./pages/SystemStatusPage";
+import DistrictsPage from "./pages/DistrictsPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { fetchCurrentUser } from "./services/api";
@@ -19,7 +22,7 @@ function App() {
 
     try {
       return { token, user: JSON.parse(storedUser) };
-    } catch (err) {
+    } catch {
       localStorage.removeItem("eg_auth_token");
       localStorage.removeItem("eg_auth_user");
       return null;
@@ -52,22 +55,43 @@ function App() {
             )
           }
         />
+        <Route path="/" element={<DashboardPage />} />
 
-        {/* ⚡ CONFLICTO SOLUCIONADO: Usamos tu DashboardPage directo y protegido */}
         <Route
-          path="/"
+          path="/alerts"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <DashboardPage />
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
+              <AlertsPage />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/alerts"
+          path="/districts"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
-              <AlertsPage />
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
+              <DistrictsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
+              <AdminUsersPage />
             </ProtectedRoute>
           }
         />
@@ -75,8 +99,25 @@ function App() {
         <Route
           path="/telemetry"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin", "user"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
               <TelemetryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/telemetry-peaks"
+          element={
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin", "user"]}
+            >
+              <TelemetryPeaksPage />
             </ProtectedRoute>
           }
         />
@@ -85,7 +126,11 @@ function App() {
         <Route
           path="/system"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
               <SystemStatusPage />
             </ProtectedRoute>
           }
@@ -95,7 +140,11 @@ function App() {
         <Route
           path="/devops-logs"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} userRoles={userRoles} allowedRoles={["admin"]}>
+            <ProtectedRoute
+              isAuthenticated={isAuthenticated}
+              userRoles={userRoles}
+              allowedRoles={["admin"]}
+            >
               <DevOpsLogsPage />
             </ProtectedRoute>
           }
