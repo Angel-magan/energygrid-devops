@@ -22,6 +22,7 @@ app.use(helmet());
 const allowedOrigins = [
   process.env.FRONTEND_URL, // URL que nos dará Railway para el Front
   "http://localhost:5173", // Para que puedas seguir desarrollando local libremente
+  "http://44.223.2.142:5173",
 ];
 
 const corsOptions = {
