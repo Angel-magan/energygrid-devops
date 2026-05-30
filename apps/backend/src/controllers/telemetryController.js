@@ -25,7 +25,7 @@ const createTelemetry = async (req, res) => {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `Payload rechazado por datos inválidos: ${JSON.stringify(req.body)}`
+        message: `Payload rechazado por datos inválidos: ${JSON.stringify(req.body)}`,
       });
       return res.status(400).json({ error: "Invalid data" });
     }
@@ -33,7 +33,7 @@ const createTelemetry = async (req, res) => {
     // Guardamos en la base de datos de telemetría operativa
     const savedData = await telemetryService.saveTelemetry(req.body);
 
-    // ❌ ELIMINADO: console.log(`[INFO] Telemetry stored...`); 
+    // ❌ ELIMINADO: console.log(`[INFO] Telemetry stored...`);
     // Explicación: Ya no imprimimos texto por cada envío exitoso de 5s para salvar la consola.
 
     // 1. Auditoría de Seguridad: Si detectamos patrones extraños de SQL Injection
@@ -41,7 +41,7 @@ const createTelemetry = async (req, res) => {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `ALERTA DE SEGURIDAD: Inyección sospechosa mitigada en distrito='${district_id}'`
+        message: `ALERTA DE SEGURIDAD: Inyección sospechosa mitigada en distrito='${district_id}'`,
       });
     }
 
@@ -51,7 +51,7 @@ const createTelemetry = async (req, res) => {
       appendLog({
         level: "WARN",
         service: "Backend API",
-        message: `⚡ SOBRECARGA CRÍTICA DETECTADA: ${district_id} operando a ${consumption.toFixed(2)} kW`
+        message: `⚡ SOBRECARGA CRÍTICA DETECTADA: ${district_id} operando a ${consumption.toFixed(2)} kW`,
       });
     }
 
@@ -61,7 +61,7 @@ const createTelemetry = async (req, res) => {
     appendLog({
       level: "ERROR",
       service: "Database API",
-      message: `Fallo catastrófico en inserción de telemetría: ${error.message}`
+      message: `Fallo catastrófico en inserción de telemetría: ${error.message}`,
     });
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -77,14 +77,61 @@ const getTelemetry = async (req, res) => {
   }
 };
 
+// const getAllTelemetry = async (req, res) => {
+//   try {
+//     const data = await telemetryService.getAllTelemetry();
+//     res.status(200).json(data);
+//   } catch (error) {
+//     console.error("[ERROR] Fetching all telemetry:", error.message);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const getAllTelemetry = async (req, res) => {
   try {
-    const data = await telemetryService.getAllTelemetry();
-    res.status(200).json(data);
+    // 1. Capturamos los query params de la URL. Si no vienen, por defecto es página 1 y límite de 20.
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+
+    // Validamos que no metan números negativos o cero
+    if (page < 1 || limit < 1) {
+      return res
+        .status(400)
+        .json({ error: "La página y el límite deben ser mayores a 0" });
+    }
+
+    // 2. Le pasamos page y limit a tu servicio
+    const result = await telemetryService.getAllTelemetryPaginated(page, limit);
+
+    // 3. Respondemos con los datos y los metadatos de control para tu front
+    res.status(200).json({
+      data: result.data, // Los 20 registros de la telemetría
+      pagination: {
+        totalItems: result.totalItems, // Total de datos en la BD (ej. 1250)
+        totalPages: result.totalPages, // Total de páginas (ej. 1250 / 20 = 63)
+        currentPage: page, // Página actual
+        limit: limit, // Cantidad por página
+      },
+    });
   } catch (error) {
-    console.error("[ERROR] Fetching all telemetry:", error.message);
+    console.error("[ERROR] Fetching paginated telemetry:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-module.exports = { createTelemetry, getTelemetry, getAllTelemetry };
+const getTelemetryPeaks = async (req, res) => {
+  try {
+    const data = await telemetryService.getTelemetryPeaks();
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("[ERROR] Fetching telemetry peaks:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  createTelemetry,
+  getTelemetry,
+  getAllTelemetry,
+  getTelemetryPeaks,
+};

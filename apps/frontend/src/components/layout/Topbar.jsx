@@ -1,12 +1,74 @@
-import { LogOut, Menu, LogIn, Sun, Moon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ChevronDown,
+  LogOut,
+  Menu,
+  LogIn,
+  UserCircle2,
+  ShieldCheck,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDarkMode } from "../../hooks/useDarkMode";
 
-const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout, isAuthenticated }) => {
+const Topbar = ({
+  onToggleSidebar,
+  isSidebarOpen,
+  onLogout,
+  isAuthenticated,
+  currentUser,
+}) => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+  
+  // Incorporación de la funcionalidad de la rama de Rafael
   const { isDark, toggleDarkMode } = useDarkMode();
 
+  useEffect(() => {
+    if (!isProfileOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isProfileOpen]);
+
+  const displayName = useMemo(() => {
+    const name = String(currentUser?.name || "").trim();
+    const email = String(currentUser?.email || "").trim();
+    return name || email || "Usuario";
+  }, [currentUser?.email, currentUser?.name]);
+
+  const displayEmail = useMemo(() => {
+    return String(currentUser?.email || "").trim();
+  }, [currentUser?.email]);
+
+  const primaryRole = useMemo(() => {
+    const roles = Array.isArray(currentUser?.roles) ? currentUser.roles : [];
+    return roles[0] || "usuario";
+  }, [currentUser?.roles]);
+
   return (
-    <header className="h-[70px] bg-grid-panel border-b border-grid-border flex items-center justify-between px-6 select-none">
+    <header className="h-17.5 bg-grid-panel border-b border-grid-border flex items-center justify-between px-6 select-none">
       <div className="flex items-center gap-4">
         <button
           type="button"
@@ -37,15 +99,76 @@ const Topbar = ({ onToggleSidebar, isSidebarOpen, onLogout, isAuthenticated }) =
         </button>
 
         {isAuthenticated ? (
-          <button
-            type="button"
-            onClick={onLogout}
-            className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-dim hover:text-grid-danger hover:border-grid-danger/40 transition-all cursor-pointer active:scale-95"
-            aria-label="Cerrar sesion"
-            title="Cerrar sesion"
-          >
-            <LogOut size={18} />
-          </button>
+          <div className="flex items-center gap-2" ref={profileMenuRef}>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-grid-border bg-grid-deep text-grid-text hover:text-grid-cyan hover:border-grid-cyan/40 transition-all cursor-pointer active:scale-95"
+                aria-label="Abrir perfil de usuario"
+                aria-expanded={isProfileOpen}
+                aria-haspopup="menu"
+                title="Perfil de usuario"
+              >
+                <UserCircle2 size={18} />
+                <span className="hidden md:inline max-w-45 truncate text-xs font-semibold uppercase tracking-wider">
+                  {displayName}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform ${isProfileOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-3 w-70 rounded-2xl border border-grid-border bg-grid-panel shadow-2xl shadow-black/40 p-4 z-50">
+                  <div className="flex items-start gap-3 pb-4 border-b border-grid-border/60">
+                    <div className="w-11 h-11 rounded-xl bg-grid-cyan/10 border border-grid-cyan/20 flex items-center justify-center text-grid-cyan shrink-0">
+                      <UserCircle2 size={22} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-grid-cyan mb-1">
+                        Sesion activa
+                      </p>
+                      <h3 className="text-sm font-bold text-grid-text truncate">
+                        {displayName}
+                      </h3>
+                      {displayEmail && (
+                        <p className="text-xs text-grid-dim truncate mt-1">
+                          {displayEmail}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-3 text-sm">
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-grid-border/60 bg-grid-deep/60 px-3 py-2">
+                      <span className="text-grid-dim">Rol</span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                        <ShieldCheck size={12} />
+                        {primaryRole}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-grid-border/60 bg-grid-deep/60 px-3 py-2">
+                      <span className="text-grid-dim">Estado</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                        Conectado
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 h-10 rounded-xl border border-grid-danger/30 bg-grid-danger/10 text-grid-danger hover:bg-grid-danger/20 transition-colors font-bold text-sm"
+                  >
+                    <LogOut size={16} />
+                    Cerrar sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           <Link
             to="/login"

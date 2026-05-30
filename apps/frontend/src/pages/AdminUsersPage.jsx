@@ -43,6 +43,15 @@ const AdminUsersPage = () => {
 
   const token = localStorage.getItem("eg_auth_token");
 
+  const currentUser = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("eg_auth_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const loadUsers = async () => {
     setLoading(true);
     setMessage(null);
@@ -219,7 +228,7 @@ const AdminUsersPage = () => {
             </div>
             <div className="bg-grid-blue/10 px-4 py-2 rounded-lg border border-grid-blue flex items-center gap-2.5 text-xs font-bold text-grid-cyan tracking-wider select-none">
               <ShieldCheck size={16} />
-              ADMIN CRUD
+              USUARIOS
             </div>
           </div>
         </header>
@@ -248,21 +257,24 @@ const AdminUsersPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <section className="lg:col-span-7 bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center justify-between gap-4 mb-6 border-b border-grid-border/50 pb-4">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 border-b border-grid-border/50 pb-4">
+              <div className="flex items-center gap-3 w-full">
                 <Users size={20} className="text-grid-cyan" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
                   Administradores registrados
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={beginCreate}
-                className="inline-flex items-center gap-2 rounded-xl border border-grid-cyan/30 bg-grid-cyan/10 px-4 py-2 text-xs font-bold tracking-widest text-grid-cyan hover:bg-grid-cyan/15 transition-colors"
-              >
-                <UserPlus size={16} />
-                Nuevo admin
-              </button>
+              <div className="w-full sm:w-auto flex justify-start sm:justify-end">
+                <button
+                  type="button"
+                  onClick={beginCreate}
+                  aria-label="Crear nuevo administrador"
+                  className="inline-flex items-center gap-2 rounded-xl border border-grid-cyan/30 bg-grid-cyan/10 px-3 sm:px-4 py-2 text-xs font-bold tracking-widest text-grid-cyan hover:bg-grid-cyan/15 transition-colors"
+                >
+                  <UserPlus size={16} />
+                  <span className="hidden sm:inline">Nuevo admin</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 mb-4">
@@ -437,7 +449,15 @@ const AdminUsersPage = () => {
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(selectedUser)}
-                    disabled={saving}
+                    disabled={
+                      saving ||
+                      String(selectedUser.id) === String(currentUser?.id)
+                    }
+                    title={
+                      String(selectedUser.id) === String(currentUser?.id)
+                        ? "No puedes desactivar tu propia cuenta"
+                        : undefined
+                    }
                     className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold transition-colors disabled:opacity-60 ${selectedUser.is_active ? "border-grid-danger/40 bg-grid-danger/10 text-grid-danger hover:bg-grid-danger/15" : "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"}`}
                   >
                     <Power size={16} />

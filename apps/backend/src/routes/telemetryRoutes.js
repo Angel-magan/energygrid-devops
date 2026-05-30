@@ -3,6 +3,7 @@ const router = express.Router();
 const telemetryController = require("../controllers/telemetryController");
 
 router.get("/telemetry", telemetryController.getTelemetry);
+router.get("/telemetry/peaks", telemetryController.getTelemetryPeaks);
 router.get("/telemetry/all", telemetryController.getAllTelemetry);
 router.post("/telemetry", telemetryController.createTelemetry);
 
