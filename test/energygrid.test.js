@@ -2,9 +2,14 @@ const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
 (async function runEnergyGridTests() {
-    // Configuración del navegador Chrome para entorno local
+    // 🛡️ CONFIGURACIÓN AVANZADA PARA ENTORNO VIRTUAL CI/CD
     let options = new chrome.Options();
-    // options.addArguments('--headless'); // Descomenta esta línea si no deseas que se abra la ventana del navegador de forma física
+
+    options.addArguments('--headless=new');          // Forzar modo segundo plano estricto
+    options.addArguments('--no-sandbox');             // Saltar aislamiento de usuario de Linux (Obligatorio en CI)
+    options.addArguments('--disable-dev-shm-usage');  // Evitar colapsos por falta de memoria compartida (/dev/shm)
+    options.addArguments('--disable-gpu');            // Desactivar aceleración por hardware gráfico
+    options.addArguments('--window-size=1920,1080');  // Definir una resolución virtual para simular clicks precisos
 
     let driver = await new Builder()
         .forBrowser('chrome')
