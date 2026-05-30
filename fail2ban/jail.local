@@ -1,0 +1,13 @@
+[DEFAULT]
+bantime  = 120
+findtime = 60
+maxretry = 3
+
+[energygrid-security]
+enabled  = true
+filter   = eg-bruteforce
+logpath  = /var/log/nginx/access.log
+maxretry = 3
+# Sobreescribimos la acción por defecto para que sea puramente basada en comandos ejecutables
+action = %(action_)s
+         [actionban="echo 'deny <ip>;' >> /etc/nginx/conf.d/blacklist.conf", actionunban="sed -i '/deny <ip>;/d' /etc/nginx/conf.d/blacklist.conf"]
