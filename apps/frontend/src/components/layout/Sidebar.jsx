@@ -41,16 +41,15 @@ const Sidebar = ({
         </button>
       </div>
       <nav className="flex-1">
-        <ul className="space-y-1.5">
-          <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-cyan bg-grid-blue/15 border border-grid-blue/30 font-semibold transition-all cursor-pointer">
+        <ul className="space-y-1.5 px-2">
+          <li>
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
                   isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                    ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                    : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
                 }`
               }
             >
@@ -60,16 +59,15 @@ const Sidebar = ({
           </li>
 
           {isAdmin && (
-            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <li>
               <NavLink
                 to="/alerts"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
-                  isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
-                }`
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
+                    isActive
+                      ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                      : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
+                  }`
                 }
               >
                 <AlertTriangle size={20} />
@@ -77,18 +75,16 @@ const Sidebar = ({
               </NavLink>
             </li>
           )}
-
           {isAdmin && (
-            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <li>
               <NavLink
                 to="/telemetry"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
-                  isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
-                }`
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
+                    isActive
+                      ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                      : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
+                  }`
                 }
               >
                 <Activity size={20} />
@@ -96,18 +92,16 @@ const Sidebar = ({
               </NavLink>
             </li>
           )}
-
           {isAdmin && (
-            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <li>
               <NavLink
                 to="/telemetry-peaks"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
-                  isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
-                }`
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
+                    isActive
+                      ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                      : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
+                  }`
                 }
               >
                 <ChartSpline size={20} />
@@ -115,18 +109,16 @@ const Sidebar = ({
               </NavLink>
             </li>
           )}
-
           {isAdmin && (
-            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <li>
               <NavLink
                 to="/devops-logs"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
-                  isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
-                }`
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
+                    isActive
+                      ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                      : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
+                  }`
                 }
               >
                 <Terminal size={20} />
@@ -134,18 +126,16 @@ const Sidebar = ({
               </NavLink>
             </li>
           )}
-
           {isAdmin && (
-            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <li>
               <NavLink
                 to="/admin/users"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
-                  isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
-                }`
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
+                    isActive
+                      ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                      : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
+                  }`
                 }
               >
                 <Users size={20} />
@@ -155,16 +145,15 @@ const Sidebar = ({
           )}
 
           {isAdmin && (
-            <li className="flex items-center gap-3 py-3 px-4 rounded-xl text-grid-dim hover:text-grid-text hover:bg-grid-deep/50 transition-all cursor-pointer group">
+            <li>
               <NavLink
                 to="/districts"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                ${
-                  isActive
-                    ? "bg-purple-500/20 border border-purple-500/40 text-white shadow-lg"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
-                }`
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-semibold ${
+                    isActive
+                      ? "bg-grid-blue/20 border border-grid-blue/40 text-grid-cyan shadow-sm"
+                      : "text-grid-dim hover:bg-grid-border/30 hover:text-grid-text"
+                  }`
                 }
               >
                 <Building2 size={20} />

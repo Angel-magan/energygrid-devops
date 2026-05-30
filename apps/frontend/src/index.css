@@ -1,19 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  /* 1. Registramos tu paleta de colores de la imagen */
-  --color-grid-deep: #0d1117; /* Fondo oscuro profundo */
-  --color-grid-panel: #161b22; /* Fondo de las tarjetas/paneles */
-  --color-grid-blue: #305575; /* Azul medio para detalles o bordes */
-  --color-grid-cyan: #2fb1ff; /* El cian brillante de tu paleta */
-  --color-grid-text: #f0f6fc; /* Blanco azulado para títulos */
-  --color-grid-dim: #8b949e; /* Gris para textos secundarios */
-  --color-grid-border: #30363d; /* Color para bordes sutiles */
-  --color-grid-danger: #f85149; /* Rojo para alertas de sobrecarga */
+  /* 1. Registramos tu paleta dinámica */
+  --color-grid-deep: var(--theme-bg);
+  --color-grid-panel: var(--theme-panel);
+  --color-grid-blue: var(--theme-blue);
+  --color-grid-cyan: var(--theme-cyan);
+  --color-grid-text: var(--theme-text);
+  --color-grid-dim: var(--theme-dim);
+  --color-grid-border: var(--theme-border);
+  --color-grid-danger: var(--theme-danger);
 }
 
 @layer base {
-  /* 2. Estilos globales para Body y HTML (Limpieza de resets de Vite) */
+  /* 2. Variables de Color (Light Mode por defecto) */
+  :root {
+    --theme-bg: #f8fafc;
+    --theme-panel: #ffffff;
+    --theme-blue: #e0f2fe;
+    --theme-cyan: #0284c7;
+    --theme-text: #0f172a;
+    --theme-dim: #64748b;
+    --theme-border: #e2e8f0;
+    --theme-danger: #ef4444;
+    color-scheme: light;
+  }
+
+  /* 3. Variables de Color (Dark Mode) */
+  .dark {
+    --theme-bg: #0d1117;
+    --theme-panel: #161b22;
+    --theme-blue: #305575;
+    --theme-cyan: #2fb1ff;
+    --theme-text: #f0f6fc;
+    --theme-dim: #8b949e;
+    --theme-border: #30363d;
+    --theme-danger: #f85149;
+    color-scheme: dark;
+  }
+
+  /* 4. Estilos globales para Body y HTML (Limpieza de resets de Vite) */
   html,
   body {
     margin: 0;
@@ -22,9 +48,9 @@
     background-color: var(--color-grid-deep);
     color: var(--color-grid-text);
     font-family: "Inter", system-ui, sans-serif;
-    color-scheme: dark; /* Mantiene los inputs y scrollbars oscuros nativamente */
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
   #root {
