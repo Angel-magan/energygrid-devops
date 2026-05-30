@@ -72,7 +72,9 @@ const SystemStatusPage = ({
   scaling: scalingProp,
 } = {}) => {
   const [nowMs, setNowMs] = useState(() => Date.now());
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [chaosTime, setChaosTime] = useState(""); // Guarda la hora seleccionada
+  const [chaosMode, setChaosMode] = useState("NORMAL"); // "NORMAL", "SCHEDULED", "RUNNING"
   const { data: statusData, error } = useSystemStatus(5000);
 
   useEffect(() => {
@@ -104,12 +106,24 @@ const SystemStatusPage = ({
 
   const metrics = metricsProp ||
     statusData?.metrics || {
-      cpu: null,
-      ram: null,
-      apiLatencyMs: null,
-      eventsPerSec: null,
-      activeConnections: null,
-    };
+    cpu: null,
+    ram: null,
+    apiLatencyMs: null,
+    eventsPerSec: null,
+    activeConnections: null,
+  };
+  // Sincronización robusta: la UI lee directamente la realidad de la memoria del backend
+  useEffect(() => {
+    if (statusData?.scaling?.loadBalancing?.includes("SATURATED")) {
+      setChaosMode("RUNNING");
+    } else if (statusData?.scheduledTime) {
+      // Si el backend reporta una hora agendada en memoria, preservamos el estado visual
+      setChaosMode("SCHEDULED");
+      setChaosTime(statusData.scheduledTime);
+    } else {
+      setChaosMode("NORMAL");
+    }
+  }, [statusData]);
 
   const healthChecks =
     (Array.isArray(healthChecksProp) && healthChecksProp) ||
@@ -123,10 +137,10 @@ const SystemStatusPage = ({
 
   const scaling = scalingProp ||
     statusData?.scaling || {
-      instancesActive: null,
-      loadBalancing: null,
-      autoscaling: null,
-    };
+    instancesActive: null,
+    loadBalancing: null,
+    autoscaling: null,
+  };
 
   const overallStatus = useMemo(() => {
     const statuses = services.map((s) => s.status);
@@ -137,6 +151,49 @@ const SystemStatusPage = ({
 
   const overallMeta = statusMeta[overallStatus] ?? statusMeta.DEGRADED;
   const OverallIcon = overallMeta.Icon;
+
+  const executeChaosAction = async (actionType) => {
+    try {
+      // Si estamos en desarrollo apunta al puerto 3000 (Express). Si estamos en producción (Railway), usa la ruta relativa /api
+      const isDev = window.location.hostname === "localhost";
+      const backendUrl = isDev
+        ? "http://localhost:3000/api/system/chaos"
+        : "/api/system/chaos";
+
+      const response = await fetch(backendUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: actionType,
+          scheduledTime: actionType === "SCHEDULE" ? chaosTime : null
+        })
+      });
+
+      if (!response.ok) {
+        console.error("El backend devolvió un código de error de red:", response.status);
+        return;
+      }
+
+      // Sincronización visual local inmediata
+      if (actionType === "START_NOW") {
+        setChaosMode("RUNNING");
+      } else if (actionType === "SCHEDULE") {
+        setChaosMode("SCHEDULED");
+      } else if (actionType === "MITIGATE" || actionType === "CANCEL") {
+        setChaosMode("NORMAL");
+        setChaosTime("");
+        setIsModalOpen(false);
+      }
+
+      // Forzar al hook a actualizar las métricas y traer los logs al instante
+      if (statusData && typeof statusData.refetch === "function") {
+        statusData.refetch();
+      }
+
+    } catch (err) {
+      console.error("Error de comunicación con el microservicio de estado:", err);
+    }
+  };
 
   return (
     <MainLayout>
@@ -408,11 +465,27 @@ const SystemStatusPage = ({
           </section>
 
           <section className="bg-grid-panel border border-grid-border rounded-2xl p-6 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6 border-b border-grid-border/50 pb-4">
-              <Cloud size={20} className="text-grid-cyan" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
-                Escalabilidad
-              </h2>
+            <div className="flex items-center justify-between mb-6 border-b border-grid-border/50 pb-4">
+              <div className="flex items-center gap-3">
+                <Cloud size={20} className="text-grid-cyan" />
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-grid-dim">
+                  Escalabilidad & DevOps
+                </h2>
+              </div>
+
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className={`cursor-pointer text-xs font-bold px-3 py-1.5 rounded-lg border transition-all duration-150 ${chaosMode === "RUNNING"
+                    ? "bg-grid-danger/20 border-grid-danger text-grid-danger animate-pulse"
+                    : chaosMode === "SCHEDULED"
+                      ? "bg-yellow-500/20 border-yellow-500 text-yellow-300"
+                      : "bg-blue-500/10 border-blue-500/30 text-grid-blue hover:bg-blue-500/20"
+                  }`}
+              >
+                {chaosMode === "RUNNING" && "⚠️ Caos Activo"}
+                {chaosMode === "SCHEDULED" && `⏰ Caos a las ${chaosTime}`}
+                {chaosMode === "NORMAL" && "⚙️ Configurar Caos"}
+              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -420,10 +493,8 @@ const SystemStatusPage = ({
                 <p className="text-xs font-bold uppercase tracking-widest text-grid-dim">
                   Instancias activas
                 </p>
-                <p className="text-2xl font-bold mt-2 font-mono-tech">
-                  {Number.isFinite(Number(scaling.instancesActive))
-                    ? Math.round(Number(scaling.instancesActive))
-                    : "—"}
+                <p className="text-2xl font-bold mt-2 font-mono-tech text-grid-cyan">
+                  {chaosMode === "RUNNING" ? "1" : (chaosMode === "NORMAL" && chaosTime ? "2" : Math.round(Number(scaling.instancesActive || 1)))}
                 </p>
               </div>
 
@@ -432,7 +503,7 @@ const SystemStatusPage = ({
                   Balanceo de carga
                 </p>
                 <p className="text-sm font-bold mt-3 text-grid-text font-mono-tech">
-                  {scaling.loadBalancing ?? "—"}
+                  {chaosMode === "RUNNING" ? "OVERLOADED" : (scaling.loadBalancing || "ROUND_ROBIN")}
                 </p>
               </div>
 
@@ -441,14 +512,104 @@ const SystemStatusPage = ({
                   Autoscaling status
                 </p>
                 <p className="text-sm font-bold mt-3 text-grid-text font-mono-tech">
-                  {scaling.autoscaling ?? "—"}
+                  {chaosMode === "RUNNING" ? "ALERT_TRIGGERED" : (scaling.autoscaling || "STABLE")}
                 </p>
               </div>
             </div>
 
+            {/* MODAL AVANZADO PROGRAMABLE */}
+            {isModalOpen && (
+              <div className="fixed inset-0 bg-grid-deep/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-grid-panel border border-grid-border rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-base font-bold text-grid-text flex items-center gap-2">
+                      <Terminal className="text-grid-cyan" size={18} />
+                      <span>Laboratorio DevOps: Simulación de Carga</span>
+                    </h3>
+                  </div>
+                  <p className="text-xs text-grid-dim leading-relaxed">
+                    Configura escenarios de estrés para evaluar el comportamiento del balanceador y la escalabilidad del contenedor <code className="text-grid-blue">eg-backend</code>.
+                  </p>
+
+                  {chaosMode !== "RUNNING" ? (
+                    <div className="mt-4 space-y-4">
+                      {/* Formulario de programación */}
+                      <div className="bg-grid-deep/60 p-4 rounded-xl border border-grid-border/50">
+                        <label className="block text-xs font-bold text-grid-dim mb-2 uppercase tracking-wide">
+                          Opción 1: Programar Hora de Mayor Demanda
+                        </label>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="time"
+                            value={chaosTime}
+                            onChange={(e) => setChaosTime(e.target.value)}
+                            className="bg-grid-panel border border-grid-border rounded-lg px-3 py-1.5 text-sm text-grid-text focus:outline-none focus:border-grid-cyan font-mono-tech"
+                          />
+                          <button
+                            onClick={() => executeChaosAction("SCHEDULE")}
+                            className="cursor-pointer text-xs font-bold bg-grid-blue text-grid-deep px-3 py-2 rounded-lg hover:opacity-90"
+                          >
+                            Programar Alerta
+                          </button>
+                          {chaosMode === "SCHEDULED" && (
+                            <button
+                              onClick={() => executeChaosAction("CANCEL")}
+                              className="cursor-pointer text-xs font-bold bg-grid-danger/20 text-grid-danger px-3 py-2 rounded-lg border border-grid-danger/30"
+                            >
+                              Cancelar Alerta
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-center text-xs text-grid-dim font-semibold">— O —</div>
+
+                      <div className="flex justify-between items-center bg-grid-danger/5 border border-grid-danger/20 p-3 rounded-xl">
+                        <span className="text-xs text-grid-text font-medium">Opción 2: Forzar inyección inmediata</span>
+                        <button
+                          onClick={() => executeChaosAction("START_NOW")}
+                          className="cursor-pointer text-xs font-bold bg-grid-danger text-grid-text px-3 py-2 rounded-lg"
+                        >
+                          Saturar CPU Ya
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Pantalla cuando el caos está activo y requiere la mitigación por comando */
+                    <div className="mt-5 border-t border-grid-border/40 pt-4">
+                      <div className="bg-red-950/30 font-mono-tech text-[11px] p-3 rounded-lg text-grid-danger border border-grid-danger/20 mb-4 leading-normal">
+                        💥 <span className="font-bold">SISTEMA SATURADO (CPU al 99%)</span>
+                        <br />Para solucionar esta alerta, abre tu terminal local y ejecuta:
+                        <div className="bg-grid-deep p-2 rounded border border-grid-border mt-2 text-grid-text font-bold select-all">
+                          docker-compose up -d --scale eg-backend=2
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center mt-6">
+                        <span className="text-[10px] text-grid-danger uppercase tracking-widest animate-pulse font-bold">🔴 Monitoreando Docker...</span>
+                        <button
+                          onClick={() => executeChaosAction("MITIGATE")}
+                          className="text-xs font-bold bg-grid-cyan text-grid-deep px-4 py-2 rounded-xl shadow-lg shadow-grid-cyan/20"
+                        >
+                          Simular Aplicación de Comando
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex justify-end border-t border-grid-border/30 pt-4">
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className="cursor-pointer text-xs font-semibold px-4 py-2 text-grid-dim hover:text-grid-text"
+                    >
+                      Cerrar Panel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="mt-5 text-xs text-grid-dim">
-              Preparado para consumir métricas reales desde el backend
-              (inyectando props o conectando un hook de observabilidad).
+              Entorno local preparado para validar políticas de infraestructura replicable.
             </div>
           </section>
         </div>
