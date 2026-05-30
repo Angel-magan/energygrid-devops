@@ -6,6 +6,9 @@ WORKDIR /app
 # Copiar manifiestos primero para aprovechar la caché de Docker
 COPY package*.json ./
 
+# Instalar Docker CLI para que el backend pueda auto-escalarse
+RUN apk add --no-cache docker-cli docker-cli-compose
+
 # Instalar dependencias de producción
 RUN npm ci --only=production
 
