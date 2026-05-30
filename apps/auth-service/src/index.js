@@ -16,6 +16,7 @@ const port = process.env.PORT || process.env.AUTH_PORT || 3001;
 app.use(helmet());
 
 const allowedOrigins = [
+  process.env.FRONTEND_URL,
   "http://localhost:5173",
   "http://44.223.2.142:5173", // <-- Tu IP pública de AWS
 ];
